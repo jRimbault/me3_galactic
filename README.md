@@ -1,5 +1,5 @@
 ```
-galactic 0.1.1
+galactic 0.1.4
 Deploy missions and collect the rewards for galactic readiness in Mass Effect 3.
 You have to get the value of your identifier cookie on the website, and it expires
 in a few hours. But running this program once or twice a day should be enough.
@@ -12,7 +12,7 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -c, --cookie <cookie>    identifier cookie for n7hq.masseffect.com [env: ME3N7HQSID=]
+    -c, --cookie <cookie>    identifier cookie for n7hq.masseffect.com [env: ME3N7HQSID]
 
 ARGS:
     <mission>    specific mission identifier

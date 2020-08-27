@@ -8,7 +8,7 @@ struct Args {
     #[structopt(flatten)]
     action: galactic::Action,
     /// identifier cookie for n7hq.masseffect.com
-    #[structopt(short, long, env = galactic::ID_COOKIE)]
+    #[structopt(short, long, env = galactic::ID_COOKIE, hide_env_values = true)]
     cookie: Option<String>,
     /// specific mission identifier
     mission: Option<String>,
