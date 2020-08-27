@@ -20,29 +20,45 @@ fn main() {
         eprintln!("The {} cookie is required", galactic::ID_COOKIE);
         std::process::exit(1);
     }
-    let cookie = args.cookie.clone().unwrap();
-    let client = galactic::N7Client::with(&cookie, args.action);
+    let cookie = args.cookie.as_deref().unwrap();
+    let client = galactic::N7Client::with(&cookie);
 
-    match args.mission.clone() {
-        Some(system) => mission(&args, &client, &system),
+    match args.mission.as_deref() {
+        Some(system) => launch(&args, &client, &galactic::Mission(&system)),
         None => {
-            for system in galactic::SYSTEMS.iter() {
-                mission(&args, &client, system);
+            for mission in galactic::MISSIONS.one_hour.iter() {
+                launch(&args, &client, mission);
             }
         }
     }
 }
 
-fn mission(args: &Args, client: &galactic::N7Client, system: &str) {
-    match client.mission(&system) {
+fn launch(args: &Args, client: &galactic::N7Client, mission: &galactic::Mission) {
+    match client.mission(&mission, &args.action) {
         Ok(r) => {
             // this means we've been redirected and the cookie might be expired
             if r.url().as_str() == "http://n7hq.masseffect.com/" {
-                eprintln!("failed {} {}, cookie might be expired", args.action, system);
+                eprintln!(
+                    "failed {} for {}, cookie might be expired",
+                    args.action.description(),
+                    mission
+                );
+            } else if r.status() == 200 {
+                eprintln!(
+                    "{} for {} {}",
+                    args.action.description(),
+                    mission,
+                    r.status()
+                )
             } else {
-                eprintln!("{} {} {}", args.action, system, r.status())
+                eprintln!(
+                    "failed {} for {} {}",
+                    args.action.description(),
+                    mission,
+                    r.status()
+                )
             }
         }
-        Err(error) => eprintln!("failed {} {} {}", args.action, system, error),
+        Err(error) => eprintln!("failed {} {} {}", args.action.description(), mission, error),
     }
 }
