@@ -1,7 +1,7 @@
 style: github
 template: RELEASE.tpl.md
 info:
-  repository_url: https://github.com/jRimbault/me3_gallactic
+  repository_url: https://github.com/jRimbault/me3_galactic
 options:
   commits:
     # filters:

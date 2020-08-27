@@ -16,7 +16,7 @@ jobs:
         include:
           - target: x86_64-pc-windows-msvc
             os: windows-latest
-            name: gallactic-x86_64-pc-windows-msvc.zip
+            name: galactic-x86_64-pc-windows-msvc.zip
     runs-on: ${{ matrix.os }}
     steps:
       - name: Setup | Checkout
@@ -47,8 +47,8 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cd target/${{ matrix.target }}/release
-          strip gallactic.exe
-          7z a ../../../${{ matrix.name }} gallactic.exe
+          strip galactic.exe
+          7z a ../../../${{ matrix.name }} galactic.exe
           cd -
 
       - name: Post Setup | Upload artifacts
@@ -77,7 +77,7 @@ jobs:
         uses: actions/download-artifact@v2
 
       - name: Setup | Checksums
-        run: for file in gallactic-*/gallactic-*; do openssl dgst -sha256 -r "$file" | awk '{print $1}' > "${file}.sha256"; done
+        run: for file in galactic-*/galactic-*; do openssl dgst -sha256 -r "$file" | awk '{print $1}' > "${file}.sha256"; done
 
       - name: Setup | Release notes
         run: |
@@ -87,7 +87,7 @@ jobs:
       - name: Build | Publish
         uses: softprops/action-gh-release@v1
         with:
-          files: gallactic-*/gallactic-*
+          files: galactic-*/galactic-*
           body_path: RELEASE.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
