@@ -1,6 +1,8 @@
 ```
 galactic 0.1.1
-Deploy missions and collect the rewards for galactic readiness in Mass Effect 3. You have to get the value of your identifier cookie on the website, and it expires in a few hours. But running this program once or twice a day should be enough.
+Deploy missions and collect the rewards for galactic readiness in Mass Effect 3.
+You have to get the value of your identifier cookie on the website, and it expires
+in a few hours. But running this program once or twice a day should be enough.
 
 USAGE:
     galactic [OPTIONS] [mission] <SUBCOMMAND>
