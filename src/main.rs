@@ -5,7 +5,7 @@ use structopt::StructOpt;
 /// in a few hours. But running this program once or twice a day should be enough.
 #[derive(Debug, StructOpt)]
 struct Args {
-    #[structopt(flatten)]
+    #[structopt(subcommand)]
     action: galactic::Action,
     /// identifier cookie for n7hq.masseffect.com
     #[structopt(short, long, env = galactic::ID_COOKIE, hide_env_values = true)]
