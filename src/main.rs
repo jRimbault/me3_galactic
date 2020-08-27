@@ -40,25 +40,14 @@ fn launch(args: &Args, client: &galactic::N7Client, mission: &galactic::Mission)
             if r.url().as_str() == "http://n7hq.masseffect.com/" {
                 eprintln!(
                     "failed {} for {}, cookie might be expired",
-                    args.action.description(),
-                    mission
+                    args.action, mission
                 );
             } else if r.status() == 200 {
-                eprintln!(
-                    "{} for {} {}",
-                    args.action.description(),
-                    mission,
-                    r.status()
-                )
+                eprintln!("{} for {} {}", args.action, mission, r.status())
             } else {
-                eprintln!(
-                    "failed {} for {} {}",
-                    args.action.description(),
-                    mission,
-                    r.status()
-                )
+                eprintln!("failed {} for {} {}", args.action, mission, r.status())
             }
         }
-        Err(error) => eprintln!("failed {} {} {}", args.action.description(), mission, error),
+        Err(error) => eprintln!("failed {} {} {}", args.action, mission, error),
     }
 }
