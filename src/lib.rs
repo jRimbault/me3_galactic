@@ -1,3 +1,5 @@
+pub mod client;
+
 use structopt::StructOpt;
 
 const BASE_URL: &str = "http://n7hq.masseffect.com/galaxy_at_war/galactic_readiness/";
@@ -29,6 +31,26 @@ pub enum Action {
     Deploy,
 }
 
+#[derive(Debug, serde::Deserialize)]
+pub struct N7Response {
+    pub result: bool,
+    pub ratings: Option<GalaxyStatus>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+pub struct GalaxyStatus {
+    #[serde(deserialize_with = "string_as_f64")]
+    pub inner: f64,
+    #[serde(deserialize_with = "string_as_f64")]
+    pub terminus: f64,
+    #[serde(deserialize_with = "string_as_f64")]
+    pub earth: f64,
+    #[serde(deserialize_with = "string_as_f64")]
+    pub outer: f64,
+    #[serde(deserialize_with = "string_as_f64")]
+    pub attican: f64,
+}
+
 impl Action {
     const fn value(&self) -> &'static str {
         match *self {
@@ -45,35 +67,6 @@ impl Action {
     }
 }
 
-pub struct N7Client(reqwest::blocking::Client);
-
-type ReqResult = reqwest::Result<reqwest::blocking::Response>;
-
-impl N7Client {
-    pub fn with(cookie: &str) -> Self {
-        let mut headers = reqwest::header::HeaderMap::new();
-        headers.insert(
-            reqwest::header::COOKIE,
-            reqwest::header::HeaderValue::from_str(&format!("{}={}", ID_COOKIE, cookie)).unwrap(),
-        );
-        Self(
-            reqwest::blocking::Client::builder()
-                .cookie_store(true)
-                .default_headers(headers)
-                .build()
-                .unwrap(),
-        )
-    }
-
-    pub fn mission(&self, system: &Mission, action: &Action) -> ReqResult {
-        self.0
-            .post(BASE_URL)
-            .query(&[("ajax_action", action.value())])
-            .form(&[("mission_code", system.0)])
-            .send()
-    }
-}
-
 impl std::fmt::Display for Action {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         f.write_str(self.description())
@@ -84,4 +77,15 @@ impl std::fmt::Display for Mission<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         std::fmt::Debug::fmt(self, f)
     }
+}
+
+fn string_as_f64<'de, D>(deserializer: D) -> Result<f64, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let value = <String as serde::Deserialize>::deserialize(deserializer)?;
+    value
+        .trim_matches('"')
+        .parse::<f64>()
+        .map_err(serde::de::Error::custom)
 }
