@@ -24,7 +24,7 @@ fn main() {
     let client = galactic::N7Client::with(&cookie);
 
     match args.mission.as_deref() {
-        Some(system) => launch(&args, &client, &galactic::Mission(&system)),
+        Some(system) => launch(&args, &client, &galactic::Mission(system)),
         None => {
             for mission in galactic::MISSIONS.one_hour.iter() {
                 launch(&args, &client, mission);
@@ -34,6 +34,21 @@ fn main() {
 }
 
 fn launch(args: &Args, client: &galactic::N7Client, mission: &galactic::Mission) {
+    #[derive(Debug, serde::Deserialize)]
+    struct N7Response {
+        result: bool,
+        ratings: Option<GalaxyStatus>,
+    }
+
+    #[derive(Debug, serde::Deserialize)]
+    struct GalaxyStatus {
+        inner: f64,
+        terminus: f64,
+        earth: f64,
+        outer: f64,
+        attican: f64,
+    }
+
     match client.mission(&mission, &args.action) {
         Ok(r) => {
             // this means we've been redirected and the cookie might be expired
@@ -44,7 +59,7 @@ fn launch(args: &Args, client: &galactic::N7Client, mission: &galactic::Mission)
                 );
             } else if r.status() == 200 {
                 eprintln!("{} for {} {}", args.action, mission, r.status());
-                eprintln!("{}", r.text().unwrap());
+                eprintln!("{:?}", r.json::<N7Response>().unwrap());
             } else {
                 eprintln!("failed {} for {} {}", args.action, mission, r.status());
             }
