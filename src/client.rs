@@ -1,22 +1,39 @@
-use typed_builder::TypedBuilder;
-
-#[derive(Debug, TypedBuilder)]
-pub struct N7Client {
-    client: ClientWithCookie,
-}
-
 #[derive(Debug)]
-pub struct ClientWithCookie(reqwest::blocking::Client);
+pub struct N7Client {
+    client: reqwest::blocking::Client,
+}
 
 #[derive(Debug, Clone)]
 pub struct Mission {
-    name: String,
-    action: super::Action,
+    pub name: String,
+    pub action: super::Action,
 }
 
 impl N7Client {
+    pub fn with_cookie(cookie: &str) -> Self {
+        use super::ID_COOKIE;
+        use reqwest::{
+            blocking::Client,
+            header::{HeaderMap, HeaderValue, COOKIE},
+        };
+        Self {
+            client: Client::builder()
+                .cookie_store(true)
+                .default_headers({
+                    let mut headers = HeaderMap::new();
+                    headers.insert(
+                        COOKIE,
+                        HeaderValue::from_str(&format!("{}={}", ID_COOKIE, cookie)).unwrap(),
+                    );
+                    headers
+                })
+                .build()
+                .unwrap(),
+        }
+    }
+
     /// consumes both the client and iterator
-    pub fn run_missions<M, I>(
+    pub fn launch_missions<M, I>(
         self,
         missions: I,
     ) -> impl Iterator<Item = anyhow::Result<super::N7Response>>
@@ -24,9 +41,9 @@ impl N7Client {
         M: Into<Mission>,
         I: IntoIterator<Item = M>,
     {
+        let redirected_url: &str = &super::BASE_URL[..27];
         missions.into_iter().map(Into::into).map(move |mission| {
             self.client
-                .0
                 .post(super::BASE_URL)
                 .query(&[("ajax_action", mission.action.value())])
                 .form(&[("mission_code", &mission.name)])
@@ -36,7 +53,7 @@ impl N7Client {
                     if r.status() != 200 {
                         Err(anyhow::anyhow!("unknown, {}", r.status())
                             .context(format!("failed {} for {}", mission.action, mission.name)))
-                    } else if r.url().as_str() == "http://n7hq.masseffect.com/" {
+                    } else if r.url().as_str() == redirected_url {
                         Err(anyhow::anyhow!("cookie might be expired")
                             .context(format!("failed {} for {}", mission.action, mission.name)))
                     } else {
@@ -54,27 +71,4 @@ impl<'a> From<(super::Mission<'a>, super::Action)> for Mission {
             action,
         }
     }
-}
-
-pub fn make_client(cookie: &str) -> ClientWithCookie {
-    use super::ID_COOKIE;
-    use reqwest::{
-        blocking::Client,
-        header::{HeaderMap, HeaderValue, COOKIE},
-    };
-
-    ClientWithCookie(
-        Client::builder()
-            .cookie_store(true)
-            .default_headers({
-                let mut headers = HeaderMap::new();
-                headers.insert(
-                    COOKIE,
-                    HeaderValue::from_str(&format!("{}={}", ID_COOKIE, cookie)).unwrap(),
-                );
-                headers
-            })
-            .build()
-            .unwrap(),
-    )
 }

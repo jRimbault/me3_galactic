@@ -1,4 +1,4 @@
-use galactic::client::{make_client, N7Client};
+use galactic::client::N7Client;
 use structopt::StructOpt;
 
 /// Deploy missions and collect the rewards for galactic readiness in Mass Effect 3.
@@ -20,15 +20,13 @@ fn main() {
         std::process::exit(1);
     }
     let cookie = args.cookie.as_deref().unwrap();
-
-    let executor = N7Client::builder().client(make_client(cookie)).build();
-
     let missions = galactic::MISSIONS
         .one_hour
         .iter()
         .map(|m| (m.clone(), args.action.clone()));
 
-    for result in executor.run_missions(missions) {
+    let client = N7Client::with_cookie(cookie);
+    for result in client.launch_missions(missions) {
         match result {
             Ok(response) => println!("{:?}", response),
             Err(error) => println!("{:?}", error),
