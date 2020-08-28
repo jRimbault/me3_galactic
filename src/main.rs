@@ -43,9 +43,10 @@ fn launch(args: &Args, client: &galactic::N7Client, mission: &galactic::Mission)
                     args.action, mission
                 );
             } else if r.status() == 200 {
-                eprintln!("{} for {} {}", args.action, mission, r.status())
+                eprintln!("{} for {} {}", args.action, mission, r.status());
+                eprintln!("{}", r.text().unwrap());
             } else {
-                eprintln!("failed {} for {} {}", args.action, mission, r.status())
+                eprintln!("failed {} for {} {}", args.action, mission, r.status());
             }
         }
         Err(error) => eprintln!("failed {} {} {}", args.action, mission, error),
