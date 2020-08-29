@@ -24,7 +24,7 @@ fn main() {
     for (result, mission) in galactic::MISSIONS
         .one_hour
         .iter()
-        .map(|m| (client.launch_mission((m.clone(), args.action)), m))
+        .map(|m| (client.launch_mission((*m, args.action)), m))
     {
         match result {
             Ok(response) => match args.action {
