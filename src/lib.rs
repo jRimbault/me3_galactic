@@ -1,6 +1,8 @@
-pub mod client;
+mod client;
 mod percent;
 
+pub use client::N7Client;
+pub use percent::Percentage;
 use structopt::StructOpt;
 
 const BASE_URL: &str = "http://n7hq.masseffect.com/galaxy_at_war/galactic_readiness/";
@@ -40,16 +42,11 @@ pub struct N7Response {
 
 #[derive(Debug, serde::Deserialize)]
 pub struct GalaxyStatus {
-    #[serde(deserialize_with = "string_as_percentage")]
-    pub inner: percent::Percentage,
-    #[serde(deserialize_with = "string_as_percentage")]
-    pub terminus: percent::Percentage,
-    #[serde(deserialize_with = "string_as_percentage")]
-    pub earth: percent::Percentage,
-    #[serde(deserialize_with = "string_as_percentage")]
-    pub outer: percent::Percentage,
-    #[serde(deserialize_with = "string_as_percentage")]
-    pub attican: percent::Percentage,
+    pub inner: Percentage,
+    pub terminus: Percentage,
+    pub earth: Percentage,
+    pub outer: Percentage,
+    pub attican: Percentage,
 }
 
 impl Action {
@@ -78,15 +75,4 @@ impl std::fmt::Display for Mission<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         std::fmt::Debug::fmt(self, f)
     }
-}
-
-fn string_as_percentage<'de, D>(deserializer: D) -> Result<percent::Percentage, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    let value = <String as serde::Deserialize>::deserialize(deserializer)?;
-    value
-        .trim_matches('"')
-        .parse::<percent::Percentage>()
-        .map_err(serde::de::Error::custom)
 }

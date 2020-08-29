@@ -1,5 +1,7 @@
+use serde::Deserialize;
 use std::cmp::Ordering;
 use std::convert::{TryFrom, TryInto};
+use std::fmt;
 use std::str::FromStr;
 
 #[derive(Debug, Clone, Copy)]
@@ -33,7 +35,7 @@ impl FromStr for Percentage {
     type Err = PercentError;
 
     fn from_str(value: &str) -> Result<Self, Self::Err> {
-        let f = value.trim_matches('"').parse::<f64>()?;
+        let f = value.parse::<f64>()?;
         f.try_into().map_err(Into::into)
     }
 }
@@ -50,9 +52,21 @@ impl From<Ordering> for PercentError {
     }
 }
 
-use std::fmt;
 impl fmt::Display for PercentError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Debug::fmt(self, f)
+    }
+}
+
+impl<'de> Deserialize<'de> for Percentage {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = String::deserialize(deserializer)?;
+        value
+            .trim_matches('"')
+            .parse::<Percentage>()
+            .map_err(serde::de::Error::custom)
     }
 }
