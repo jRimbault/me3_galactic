@@ -1,4 +1,5 @@
 pub mod client;
+mod percent;
 
 use structopt::StructOpt;
 
@@ -39,16 +40,16 @@ pub struct N7Response {
 
 #[derive(Debug, serde::Deserialize)]
 pub struct GalaxyStatus {
-    #[serde(deserialize_with = "string_as_f64")]
-    pub inner: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub terminus: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub earth: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub outer: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub attican: f64,
+    #[serde(deserialize_with = "string_as_percentage")]
+    pub inner: percent::Percentage,
+    #[serde(deserialize_with = "string_as_percentage")]
+    pub terminus: percent::Percentage,
+    #[serde(deserialize_with = "string_as_percentage")]
+    pub earth: percent::Percentage,
+    #[serde(deserialize_with = "string_as_percentage")]
+    pub outer: percent::Percentage,
+    #[serde(deserialize_with = "string_as_percentage")]
+    pub attican: percent::Percentage,
 }
 
 impl Action {
@@ -79,13 +80,13 @@ impl std::fmt::Display for Mission<'_> {
     }
 }
 
-fn string_as_f64<'de, D>(deserializer: D) -> Result<f64, D::Error>
+fn string_as_percentage<'de, D>(deserializer: D) -> Result<percent::Percentage, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
     let value = <String as serde::Deserialize>::deserialize(deserializer)?;
     value
         .trim_matches('"')
-        .parse::<f64>()
+        .parse::<percent::Percentage>()
         .map_err(serde::de::Error::custom)
 }
