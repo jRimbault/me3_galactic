@@ -1,16 +1,16 @@
 mod client;
 mod percent;
 
-pub use client::N7Client;
+pub use client::{Mission as N7Mission, N7Client};
 pub use percent::Percentage;
 use structopt::StructOpt;
 
 const BASE_URL: &str = "http://n7hq.masseffect.com/galaxy_at_war/galactic_readiness/";
 pub const ID_COOKIE: &str = "ME3N7HQSID";
 
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct Mission<'a>(pub &'a str);
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct Missions<'a> {
     /// longer missions don't make econmic sense, but maybe I'll add them someday
     pub one_hour: [Mission<'a>; 5],
@@ -26,7 +26,7 @@ pub const MISSIONS: Missions = Missions {
     ],
 };
 
-#[derive(Debug, StructOpt, Clone)]
+#[derive(Debug, StructOpt, Clone, Copy)]
 pub enum Action {
     /// collect rewards
     Collect,
@@ -62,6 +62,19 @@ impl Action {
             Self::Collect => "collect rewards",
             Self::Deploy => "deploy fleet",
         }
+    }
+}
+
+impl N7Response {
+    pub fn readiness(&self) -> Option<Percentage> {
+        self.ratings.as_ref().map(|r| r.readiness())
+    }
+}
+
+impl GalaxyStatus {
+    fn readiness(&self) -> Percentage {
+        let total = self.inner.0 + self.terminus.0 + self.earth.0 + self.outer.0 + self.attican.0;
+        Percentage(total / 5.)
     }
 }
 

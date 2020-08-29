@@ -1,3 +1,4 @@
+use galactic::Action;
 use structopt::StructOpt;
 
 /// Deploy missions and collect the rewards for galactic readiness in Mass Effect 3.
@@ -6,7 +7,7 @@ use structopt::StructOpt;
 #[derive(Debug, StructOpt)]
 struct Args {
     #[structopt(subcommand)]
-    action: galactic::Action,
+    action: Action,
     /// identifier cookie for n7hq.masseffect.com
     #[structopt(short, long, env = galactic::ID_COOKIE, hide_env_values = true)]
     cookie: Option<String>,
@@ -19,15 +20,25 @@ fn main() {
         std::process::exit(1);
     }
     let cookie = args.cookie.as_deref().unwrap();
-    let missions = galactic::MISSIONS
+    let client = galactic::N7Client::with_cookie(cookie);
+    for (result, mission) in galactic::MISSIONS
         .one_hour
         .iter()
-        .map(|m| (m.clone(), args.action.clone()));
-
-    let client = galactic::N7Client::with_cookie(cookie);
-    for result in client.launch_missions(missions) {
+        .map(|m| (client.launch_mission((m.clone(), args.action)), m))
+    {
         match result {
-            Ok(response) => println!("{:?}", response),
+            Ok(response) => match args.action {
+                Action::Deploy => {
+                    println!("Deployed fleets to {}", mission);
+                }
+                Action::Collect => {
+                    println!(
+                        "Galactic readiness: {} (collected {})",
+                        response.readiness().unwrap(),
+                        mission
+                    );
+                }
+            },
             Err(error) => println!("{:?}", error),
         }
     }

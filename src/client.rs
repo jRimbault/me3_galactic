@@ -48,7 +48,7 @@ impl N7Client {
             .map(move |mission| self.launch_mission(mission))
     }
 
-    fn launch_mission<M>(&self, mission: M) -> anyhow::Result<super::N7Response>
+    pub fn launch_mission<M>(&self, mission: M) -> anyhow::Result<super::N7Response>
     where
         M: Into<Mission>,
     {

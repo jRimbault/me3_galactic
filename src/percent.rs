@@ -5,7 +5,7 @@ use std::fmt;
 use std::str::FromStr;
 
 #[derive(Debug, Clone, Copy)]
-pub struct Percentage(f64);
+pub struct Percentage(pub(crate) f64);
 
 #[derive(Debug)]
 pub enum PercentError {
@@ -55,6 +55,12 @@ impl From<Ordering> for PercentError {
 impl fmt::Display for PercentError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::Debug::fmt(self, f)
+    }
+}
+
+impl fmt::Display for Percentage {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "{} %", self.0 * 100.)
     }
 }
 
