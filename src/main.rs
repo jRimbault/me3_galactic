@@ -33,7 +33,7 @@ fn main() {
                 }
                 Action::Collect => {
                     println!(
-                        "Galactic readiness: {} (collected {})",
+                        "Galactic readiness: {} ({})",
                         response.readiness().unwrap(),
                         mission
                     );
