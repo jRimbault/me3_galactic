@@ -60,7 +60,7 @@ impl fmt::Display for PercentError {
 
 impl fmt::Display for Percentage {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} %", self.0 * 100.)
+        write!(f, "{:.2}%", self.0 * 100.)
     }
 }
 
