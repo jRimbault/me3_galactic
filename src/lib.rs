@@ -3,6 +3,7 @@ mod percent;
 
 pub use client::{Mission as N7Mission, N7Client};
 pub use percent::Percentage;
+use std::fmt;
 use structopt::StructOpt;
 
 const BASE_URL: &str = "http://n7hq.masseffect.com/galaxy_at_war/galactic_readiness/";
@@ -72,20 +73,30 @@ impl N7Response {
 }
 
 impl GalaxyStatus {
-    fn readiness(&self) -> Percentage {
+    pub fn readiness(&self) -> Percentage {
         let total = self.inner.0 + self.terminus.0 + self.earth.0 + self.outer.0 + self.attican.0;
         Percentage(total / 5.)
     }
 }
 
-impl std::fmt::Display for Action {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl fmt::Display for Action {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str(self.description())
     }
 }
 
-impl std::fmt::Display for Mission<'_> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl fmt::Display for Mission<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         std::fmt::Debug::fmt(self, f)
+    }
+}
+
+impl fmt::Display for GalaxyStatus {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "Inner sector: {}", self.inner)?;
+        writeln!(f, "Terminus sector: {}", self.terminus)?;
+        writeln!(f, "Earth sector: {}", self.earth)?;
+        writeln!(f, "Outer sector: {}", self.outer)?;
+        write!(f, "Terminus sector: {}", self.terminus)
     }
 }

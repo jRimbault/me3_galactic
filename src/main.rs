@@ -27,19 +27,19 @@ fn main() {
         .map(|m| (client.launch_mission((*m, args.action)), m))
     {
         match result {
-            Ok(response) => match args.action {
+            Ok(_) => match args.action {
                 Action::Deploy => {
                     println!("Deployed fleets to {}", mission);
                 }
                 Action::Collect => {
-                    println!(
-                        "Galactic readiness: {} ({})",
-                        response.readiness().unwrap(),
-                        mission
-                    );
+                    println!("Collected rewards for {}", mission);
                 }
             },
             Err(error) => println!("{:?}", error),
         }
+    }
+    match client.status() {
+        Ok(status) => println!("{}", status),
+        Err(error) => println!("{:?}", error),
     }
 }

@@ -11,3 +11,4 @@ reqwest = { version = "0.10", features = ["blocking", "json", "cookies"] }
 structopt = "0.3.17"
 serde = "1.0.115"
 anyhow = "1.0.32"
+scraper = "0.12.0"

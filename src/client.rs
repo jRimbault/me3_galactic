@@ -34,20 +34,6 @@ impl N7Client {
         }
     }
 
-    /// consumes both the client and iterator
-    pub fn launch_missions<M, I>(
-        self,
-        missions: I,
-    ) -> impl Iterator<Item = anyhow::Result<super::N7Response>>
-    where
-        M: Into<Mission>,
-        I: IntoIterator<Item = M>,
-    {
-        missions
-            .into_iter()
-            .map(move |mission| self.launch_mission(mission))
-    }
-
     pub fn launch_mission<M>(&self, mission: M) -> anyhow::Result<super::N7Response>
     where
         M: Into<Mission>,
@@ -69,6 +55,46 @@ impl N7Client {
                         .context(format!("failed {} for {}", mission.action, mission.name)))
                 } else {
                     r.json().map_err(Into::into)
+                }
+            })
+    }
+
+    pub fn status(&self) -> anyhow::Result<super::GalaxyStatus> {
+        self.client
+            .get(super::BASE_URL)
+            .send()
+            .map_err(Into::into)
+            .and_then(|r| r.text().map_err(Into::into))
+            .map(|html| {
+                let document = scraper::Html::parse_document(&html);
+                let selector = scraper::Selector::parse("div.gaw-trating").unwrap();
+                let mut iter = document.select(&selector);
+                super::GalaxyStatus {
+                    inner: iter
+                        .next()
+                        .map(|d| d.inner_html())
+                        .and_then(|p| p.trim_matches('%').parse().ok())
+                        .unwrap(),
+                    terminus: iter
+                        .next()
+                        .map(|d| d.inner_html())
+                        .and_then(|p| p.trim_matches('%').parse().ok())
+                        .unwrap(),
+                    earth: iter
+                        .next()
+                        .map(|d| d.inner_html())
+                        .and_then(|p| p.trim_matches('%').parse().ok())
+                        .unwrap(),
+                    outer: iter
+                        .next()
+                        .map(|d| d.inner_html())
+                        .and_then(|p| p.trim_matches('%').parse().ok())
+                        .unwrap(),
+                    attican: iter
+                        .next()
+                        .map(|d| d.inner_html())
+                        .and_then(|p| p.trim_matches('%').parse().ok())
+                        .unwrap(),
                 }
             })
     }
