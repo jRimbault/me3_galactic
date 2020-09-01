@@ -7,7 +7,7 @@ use structopt::StructOpt;
 #[derive(Debug, StructOpt)]
 struct Args {
     #[structopt(subcommand)]
-    action: Action,
+    action: Option<Action>,
     /// identifier cookie for n7hq.masseffect.com
     #[structopt(short, long, env = galactic::ID_COOKIE, hide_env_values = true)]
     cookie: Option<String>,
@@ -21,21 +21,23 @@ fn main() {
     }
     let cookie = args.cookie.as_deref().unwrap();
     let client = galactic::N7Client::with_cookie(cookie);
-    for (result, mission) in galactic::MISSIONS
-        .one_hour
-        .iter()
-        .map(|m| (client.launch_mission((*m, args.action)), m))
-    {
-        match result {
-            Ok(_) => match args.action {
-                Action::Deploy => {
-                    println!("Deployed fleets to {}", mission);
-                }
-                Action::Collect => {
-                    println!("Collected rewards for {}", mission);
-                }
-            },
-            Err(error) => println!("{:?}", error),
+    if let Some(action) = args.action {
+        for (result, mission) in galactic::MISSIONS
+            .one_hour
+            .iter()
+            .map(|m| (client.launch_mission((*m, action)), m))
+        {
+            match result {
+                Ok(_) => match action {
+                    Action::Deploy => {
+                        println!("Deployed fleets to {}", mission);
+                    }
+                    Action::Collect => {
+                        println!("Collected rewards for {}", mission);
+                    }
+                },
+                Err(error) => println!("{:?}", error),
+            }
         }
     }
     match client.status() {

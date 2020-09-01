@@ -94,10 +94,10 @@ impl fmt::Display for Mission<'_> {
 
 impl fmt::Display for GalaxyStatus {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "Inner sector: {}", self.inner)?;
-        writeln!(f, "Terminus sector: {}", self.terminus)?;
-        writeln!(f, "Earth sector: {}", self.earth)?;
-        writeln!(f, "Outer sector: {}", self.outer)?;
-        write!(f, "Terminus sector: {}", self.terminus)
+        writeln!(f, "Inner sector: {:.2}", self.inner)?;
+        writeln!(f, "Terminus sector: {:.2}", self.terminus)?;
+        writeln!(f, "Earth sector: {:.2}", self.earth)?;
+        writeln!(f, "Outer sector: {:.2}", self.outer)?;
+        write!(f, "Terminus sector: {:.2}", self.terminus)
     }
 }

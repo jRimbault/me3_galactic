@@ -60,7 +60,9 @@ impl fmt::Display for PercentError {
 
 impl fmt::Display for Percentage {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:.2}%", self.0 * 100.)
+        let r = self.0 * 100f64;
+        fmt::Display::fmt(&r, f)?;
+        f.write_str("%")
     }
 }
 
@@ -83,5 +85,18 @@ impl std::error::Error for PercentError {
             Self::Parse(error) => Some(error),
             _ => None,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn fmt() {
+        let p = Percentage(1f64);
+        assert_eq!(format!("{:.0}", p), "100%");
+        assert_eq!(format!("{:.2}", p), "100.00%");
+        assert_eq!(format!("{:.4}", p), "100.0000%");
     }
 }
