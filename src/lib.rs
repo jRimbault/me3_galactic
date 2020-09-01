@@ -98,6 +98,6 @@ impl fmt::Display for GalaxyStatus {
         writeln!(f, "Terminus sector: {:.2}", self.terminus)?;
         writeln!(f, "Earth sector: {:.2}", self.earth)?;
         writeln!(f, "Outer sector: {:.2}", self.outer)?;
-        write!(f, "Terminus sector: {:.2}", self.terminus)
+        write!(f, "Attican sector: {:.2}", self.terminus)
     }
 }

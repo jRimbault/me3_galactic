@@ -10,17 +10,12 @@ struct Args {
     action: Option<Action>,
     /// identifier cookie for n7hq.masseffect.com
     #[structopt(short, long, env = galactic::ID_COOKIE, hide_env_values = true)]
-    cookie: Option<String>,
+    cookie: String,
 }
 
 fn main() {
     let args = Args::from_args();
-    if args.cookie.is_none() {
-        eprintln!("The {} cookie is required", galactic::ID_COOKIE);
-        std::process::exit(1);
-    }
-    let cookie = args.cookie.as_deref().unwrap();
-    let client = galactic::N7Client::with_cookie(cookie);
+    let client = galactic::N7Client::with_cookie(&args.cookie);
     if let Some(action) = args.action {
         for (result, mission) in galactic::MISSIONS
             .one_hour
@@ -29,19 +24,29 @@ fn main() {
         {
             match result {
                 Ok(_) => match action {
-                    Action::Deploy => {
-                        println!("Deployed fleets to {}", mission);
-                    }
-                    Action::Collect => {
-                        println!("Collected rewards for {}", mission);
-                    }
+                    Action::Deploy => println!("Deployed fleets to {}", mission),
+                    Action::Collect => println!("Collected rewards for {}", mission),
                 },
                 Err(error) => println!("{:?}", error),
             }
         }
     }
     match client.status() {
-        Ok(status) => println!("{}", status),
+        Ok(galaxy) => {
+            println!("{}", galaxy.status);
+            for (name, mission) in galaxy.missions.0 {
+                if mission.remained.num_seconds() > 60 {
+                    println!(
+                        "{} {}m{}s",
+                        name,
+                        mission.remained.num_minutes(),
+                        mission.remained.num_seconds() % 60
+                    );
+                } else {
+                    println!("{} {}s", name, mission.remained.num_seconds());
+                }
+            }
+        }
         Err(error) => println!("{:?}", error),
     }
 }

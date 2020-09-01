@@ -1,0 +1,172 @@
+{
+    "theaters": {
+        "inner": {
+            "name": "Inner Council Space"
+        },
+        "terminus": {
+            "name": "Terminus Systems"
+        },
+        "earth": {
+            "name": "Earth Systems Alliance Space"
+        },
+        "outer": {
+            "name": "Outer Council Space"
+        },
+        "attican": {
+            "name": "Attican Traverse"
+        }
+    },
+    "missions": {
+        "gembat": {
+            "theater": "inner",
+            "planet": "Gembat",
+            "name": "STG Outpost",
+            "description": "A Salarian STG outpost based in the former krogan colony of Gembat performs recon and sabotage operations against Reaper forces.",
+            "complete_msg": "The fleet drew off enemy fire to prevent the outpost from being discovered.",
+            "duration": 3600,
+            "rating": "2.80"
+        },
+        "menae": {
+            "theater": "inner",
+            "planet": "Menae",
+            "name": "Moon Base Firax",
+            "description": "Palaven's largest moon is the spearhead of the turian effort to retake their homeworld from Reaper forces.",
+            "complete_msg": "Alliance forces provided vital air support, enabling turian teams to reclaim lost ground.",
+            "duration": 10800,
+            "rating": "2.98"
+        },
+        "cherksab": {
+            "theater": "inner",
+            "planet": "Cherk Sab",
+            "name": "Refugees",
+            "description": "The gas giant Cherk Sab has the only He-3 fuel system in the system, making it a chokepoint for refugees fleeing the Reapers.",
+            "complete_msg": "The fleet provided crucial protection that let civilian ships escape.",
+            "duration": 18000,
+            "rating": "3.17"
+        },
+        "garvug": {
+            "theater": "terminus",
+            "planet": "Garvug",
+            "name": "Prothean Dig Site",
+            "description": "Garvug contains well-preserved Prothean data and artifacts, making it attractive for archaeologists and scavengers alike.",
+            "complete_msg": "An Alliance strike team extracted key intel and Prothean resources from the area.",
+            "duration": 3600,
+            "rating": "2.80"
+        },
+        "hourglass": {
+            "theater": "terminus",
+            "planet": "Hourglass Nebula",
+            "name": "Corsairs",
+            "description": "From Eclipse smuggling operations to Blue Suns prison ships, the Hourglass Nebula has many small but well-armed ships operating independently.",
+            "complete_msg": "The fleet flushed out Reaper forces and recruited independent operators to assist Alliance efforts.",
+            "duration": 10800,
+            "rating": "2.98"
+        },
+        "omega": {
+            "theater": "terminus",
+            "planet": "Omega",
+            "name": "Captured Space Station",
+            "description": "Omega controls access to ancient technology located beyond the Omega-4 relay. The station also markets countless black-market technologies.",
+            "complete_msg": "The fleet attacked hostile forces and acquired previously unknown technology before withdrawing.",
+            "duration": 18000,
+            "rating": "3.17"
+        },
+        "pinnacle": {
+            "theater": "earth",
+            "planet": "Pinnacle Station",
+            "name": "Command Center",
+            "description": "Formerly a military training facility, Pinnacle Station been repurposed as a command and control center for Council forces.",
+            "complete_msg": "Alliance forces repelled the enemy assault and kept Pinnacle Station functional.",
+            "duration": 3600,
+            "rating": "2.80"
+        },
+        "noveria": {
+            "theater": "earth",
+            "planet": "Noveria",
+            "name": "Research Labs",
+            "description": "The frozen world of Noveria is home to some of the most advanced research facilities in the galaxy.",
+            "complete_msg": "An Alliance strike force seized critical research intel.",
+            "duration": 10800,
+            "rating": "2.98"
+        },
+        "camala": {
+            "theater": "earth",
+            "planet": "Camala",
+            "name": "Indoctrination Camp",
+            "description": "The batarian colony of Camala is now controlled by the Reapers, who are using it as a spawning ground for more Reaper forces.",
+            "complete_msg": "Alliance forces inflicted heavy damage and disrupted enemy production of new Reaper forces.",
+            "duration": 18000,
+            "rating": "3.17"
+        },
+        "cyone": {
+            "theater": "outer",
+            "planet": "Cyone",
+            "name": "Fuel Depot",
+            "description": "A combined asari-turian fuel depot on Cyone supplies ships throughout Outer Council Space. This stronghold also protects access to the Citadel.",
+            "complete_msg": "An Alliance strike force disrupted hostile activities in the sector, giving Cyone a chance to resupply.",
+            "duration": 3600,
+            "rating": "2.80"
+        },
+        "aequitas": {
+            "theater": "outer",
+            "planet": "Aequitas",
+            "name": "Palladium Mines",
+            "description": "Mining operations on Aequitas provide Palladium to allied ships for armor and shield enhancements.",
+            "complete_msg": "Alliance forces disrupted enemy activities to enable mining operations to continue.",
+            "duration": 10800,
+            "rating": "2.98"
+        },
+        "thessia": {
+            "theater": "outer",
+            "planet": "Thessia",
+            "name": "Asari Fleet",
+            "description": "Fast mass-relay access to the Citadel makes Thessia a vital military asset, and most of the asari fleet is stationed to protect the homeworld.",
+            "complete_msg": "Alliance forces bolstered asari lines, giving the asari the chance to recover and make fast repairs.",
+            "duration": 18000,
+            "rating": "3.17"
+        },
+        "trident": {
+            "theater": "attican",
+            "planet": "Trident",
+            "name": "Iridium Mines",
+            "description": "Trident is a storm-racked water world whose iridium mining operations are vital for Alliance ship sensors and infantry rapid-fire weapons.",
+            "complete_msg": "The fleet liberated Trident's main spaceport, putting the mining operations back in Alliance hands.",
+            "duration": 3600,
+            "rating": "2.80"
+        },
+        "caleston": {
+            "theater": "attican",
+            "planet": "Caleston",
+            "name": "Element Zero Mines",
+            "description": "Caleston's fragile domed cities handle one of the largest eezo mining operations in the galaxy, supplying most of the Alliance fleet's drive cores.",
+            "complete_msg": "The fleet protected Caleston's domed cities and kept element zero mining operations intact.",
+            "duration": 10800,
+            "rating": "2.98"
+        },
+        "ketosh": {
+            "theater": "attican",
+            "planet": "Ket'osh",
+            "name": "Sensor Array",
+            "description": "An ancient quarian colony abandoned during the geth uprising, Ket'osh has a massive sensor array that tracks ship movements across all nearby sectors.",
+            "complete_msg": "Alliance ships disabled the enemy sensor array, enabling friendly forces to move undetected.",
+            "duration": 18000,
+            "rating": "3.17"
+        }
+    },
+    "player_missions": [],
+    "lang": {
+        "location": "Galaxy at War",
+        "fleet_next": "Time until the next mission will be completed",
+        "fleet_wait": "Wait for a mission to complete",
+        "fleet_collect": "Recall your fleet from completed missions",
+        "button_ok": "Ok",
+        "button_deploy": "Deploy",
+        "button_cancel": "Cancel",
+        "button_collect": "Collect",
+        "mission_length": "Mission length",
+        "mission_rewards": "Rewards",
+        "mission_rating": "Readiness Rating",
+        "ajax_error": "The server is unavailable. Please try again later.",
+        "loading": "Please wait"
+    }
+}
