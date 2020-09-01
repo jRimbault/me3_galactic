@@ -65,38 +65,7 @@ impl N7Client {
             .send()
             .map_err(Into::into)
             .and_then(|r| r.text().map_err(Into::into))
-            .map(|html| {
-                let document = scraper::Html::parse_document(&html);
-                let selector = scraper::Selector::parse("div.gaw-trating").unwrap();
-                let mut iter = document.select(&selector);
-                super::GalaxyStatus {
-                    inner: iter
-                        .next()
-                        .map(|d| d.inner_html())
-                        .and_then(|p| p.trim_matches('%').parse().ok())
-                        .unwrap(),
-                    terminus: iter
-                        .next()
-                        .map(|d| d.inner_html())
-                        .and_then(|p| p.trim_matches('%').parse().ok())
-                        .unwrap(),
-                    earth: iter
-                        .next()
-                        .map(|d| d.inner_html())
-                        .and_then(|p| p.trim_matches('%').parse().ok())
-                        .unwrap(),
-                    outer: iter
-                        .next()
-                        .map(|d| d.inner_html())
-                        .and_then(|p| p.trim_matches('%').parse().ok())
-                        .unwrap(),
-                    attican: iter
-                        .next()
-                        .map(|d| d.inner_html())
-                        .and_then(|p| p.trim_matches('%').parse().ok())
-                        .unwrap(),
-                }
-            })
+            .and_then(|html| super::html::parse_from_html(&html).map_err(Into::into))
     }
 }
 

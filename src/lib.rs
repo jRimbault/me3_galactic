@@ -1,4 +1,5 @@
 mod client;
+mod html;
 mod percent;
 
 pub use client::{Mission as N7Mission, N7Client};

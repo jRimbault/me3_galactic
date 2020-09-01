@@ -76,3 +76,12 @@ impl<'de> Deserialize<'de> for Percentage {
             .map_err(serde::de::Error::custom)
     }
 }
+
+impl std::error::Error for PercentError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Parse(error) => Some(error),
+            _ => None,
+        }
+    }
+}
