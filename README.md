@@ -1,5 +1,5 @@
 ```
-galactic 0.2.0
+galactic 0.4.0
 Deploy missions and collect the rewards for galactic readiness in Mass Effect 3.
 You have to get the value of your identifier cookie on the website, and it expires
 in a few hours. But running this program once or twice a day should be enough.
