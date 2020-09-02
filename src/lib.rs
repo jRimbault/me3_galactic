@@ -2,7 +2,7 @@ mod client;
 mod html;
 mod percent;
 
-pub use client::{Mission as N7Mission, N7Client};
+pub use client::{Mission as N7Mission, N7Client, PlayerMission};
 pub use percent::Percentage;
 use std::fmt;
 use structopt::StructOpt;

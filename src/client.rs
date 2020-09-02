@@ -26,7 +26,7 @@ pub struct Galaxy {
 pub struct PlayerMission {
     start: chrono::DateTime<chrono::Utc>,
     duration: chrono::Duration,
-    is_completed: bool,
+    pub is_completed: bool,
     pub remained: chrono::Duration,
 }
 
