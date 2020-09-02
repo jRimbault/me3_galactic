@@ -1,4 +1,5 @@
 use galactic::Action;
+use rayon::prelude::*;
 use structopt::StructOpt;
 
 /// Deploy missions and collect the rewards for galactic readiness in Mass Effect 3.
@@ -17,25 +18,25 @@ fn main() {
     let args = Args::from_args();
     let client = galactic::N7Client::with_cookie(&args.cookie);
     if let Some(action) = args.action {
-        for (result, mission) in galactic::MISSIONS
+        galactic::MISSIONS
             .one_hour
-            .iter()
+            .par_iter()
             .map(|m| (client.launch_mission((*m, action)), m))
-        {
-            match result {
+            .for_each(|(result, mission)| match result {
                 Ok(_) => match action {
                     Action::Deploy => println!("Deployed fleets to {}", mission),
                     Action::Collect => println!("Collected rewards for {}", mission),
                 },
                 Err(error) => println!("{:?}", error),
-            }
-        }
+            });
     }
     match client.status() {
         Ok(galaxy) => {
             println!("{}", galaxy.status);
             for (name, mission) in galaxy.missions.0 {
-                if mission.remained.num_seconds() > 60 {
+                if mission.remained.num_seconds() == 0 {
+                    println!("{} finished", name);
+                } else if mission.remained.num_seconds() > 60 {
                     println!(
                         "{} {}m{}s",
                         name,

@@ -58,44 +58,35 @@ impl N7Client {
         M: Into<Mission>,
     {
         let mission = mission.into();
-        self.client
+        let response = self
+            .client
             .post(super::BASE_URL)
             .query(&[("ajax_action", mission.action.value())])
             .form(&[("mission_code", &mission.name)])
-            .send()
-            .map_err(Into::into)
-            .and_then(|r| {
-                if r.status() != 200 {
-                    Err(anyhow::anyhow!("unknown, {}", r.status())
-                        .context(format!("failed {} for {}", mission.action, mission.name)))
-                } else if is_redirected(r.url()) {
-                    Err(anyhow::anyhow!("cookie is expired")
-                        .context(format!("failed {} for {}", mission.action, mission.name)))
-                } else {
-                    r.json().map_err(Into::into)
-                }
-            })
+            .send()?;
+        if response.status() != 200 {
+            Err(anyhow::anyhow!("unknown, {}", response.status())
+                .context(format!("failed {} for {}", mission.action, mission.name)))
+        } else if is_redirected(response.url()) {
+            Err(anyhow::anyhow!("cookie is expired")
+                .context(format!("failed {} for {}", mission.action, mission.name)))
+        } else {
+            Ok(response.json()?)
+        }
     }
 
     pub fn status(&self) -> anyhow::Result<Galaxy> {
-        self.client
-            .get(super::BASE_URL)
-            .send()
-            .map_err(Into::into)
-            .and_then(|r| {
-                if is_redirected(r.url()) {
-                    Err(anyhow::anyhow!("cookie is expired").context("failed getting misc data"))
-                } else {
-                    r.text().map_err(Into::into)
-                }
-            })
-            .and_then(|html| {
-                let doc = super::html::Document(scraper::Html::parse_document(&html));
-                Ok(Galaxy {
-                    status: doc.galaxy_status()?,
-                    missions: doc.infos()?.player_missions.get().into(),
-                })
-            })
+        let response = self.client.get(super::BASE_URL).send()?;
+        let html = if is_redirected(response.url()) {
+            return Err(anyhow::anyhow!("cookie is expired").context("failed getting misc data"));
+        } else {
+            response.text()?
+        };
+        let doc = super::html::Document(scraper::Html::parse_document(&html));
+        Ok(Galaxy {
+            status: doc.galaxy_status()?,
+            missions: doc.infos()?.player_missions.get().into(),
+        })
     }
 }
 
@@ -119,32 +110,34 @@ impl From<HashMap<String, crate::html::script::PlayerMission>> for CurrentMissio
         CurrentMissions(
             missions
                 .into_iter()
-                .map(|(name, mission)| {
-                    (
-                        name,
-                        PlayerMission {
-                            start: chrono::DateTime::<chrono::Utc>::from_utc(
-                                chrono::NaiveDateTime::from_timestamp(mission.start, 0),
-                                chrono::Utc,
-                            ),
-                            duration: chrono::Duration::from_std(std::time::Duration::from_secs(
-                                mission.duration as _,
-                            ))
-                            .unwrap(),
-                            remained: chrono::Duration::from_std(std::time::Duration::from_secs(
-                                if mission.remained < 0 {
-                                    0
-                                } else {
-                                    mission.remained as _
-                                },
-                            ))
-                            .unwrap(),
-                            is_completed: mission.is_completed,
-                        },
-                    )
-                })
+                .map(|(name, mission)| (name, mission.into()))
                 .collect(),
         )
+    }
+}
+
+impl From<crate::html::script::PlayerMission> for PlayerMission {
+    fn from(mission: crate::html::script::PlayerMission) -> Self {
+        fn i64_to_datetime(timestamp: i64) -> chrono::DateTime<chrono::Utc> {
+            chrono::DateTime::from_utc(
+                chrono::NaiveDateTime::from_timestamp(timestamp, 0),
+                chrono::Utc,
+            )
+        }
+
+        fn u64_to_duration(duration: u64) -> chrono::Duration {
+            chrono::Duration::from_std(std::time::Duration::from_secs(duration)).unwrap()
+        }
+        Self {
+            start: i64_to_datetime(mission.start),
+            duration: u64_to_duration(mission.duration as _),
+            remained: u64_to_duration(if mission.remained < 0 {
+                0
+            } else {
+                mission.remained as _
+            }),
+            is_completed: mission.is_completed,
+        }
     }
 }
 

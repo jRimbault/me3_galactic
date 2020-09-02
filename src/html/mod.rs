@@ -2,25 +2,18 @@ pub mod script;
 
 use super::GalaxyStatus;
 use scraper::{Html, Selector};
-use std::fmt;
-
-#[derive(Debug)]
-pub enum ParseError {
-    MissingRef(String),
-    PercentError(super::percent::PercentError),
-}
 
 pub struct Document(pub(crate) Html);
 
 impl Document {
-    pub fn galaxy_status(&self) -> Result<GalaxyStatus, ParseError> {
+    pub fn galaxy_status(&self) -> anyhow::Result<GalaxyStatus> {
         let get = |selector: &str| {
             self.0
                 .select(&Selector::parse(&selector).unwrap())
                 .next()
-                .ok_or_else(|| ParseError::MissingRef(selector.to_owned()))
+                .ok_or_else(|| anyhow::anyhow!(format!("missing ref {}", selector)))
                 .map(|d| d.inner_html())
-                .and_then(|p| p.trim_matches('%').parse().map_err(Into::into))
+                .and_then(|p| Ok(p.trim_matches('%').parse()?))
         };
         let status = GalaxyStatus {
             inner: get("#gaw-trating-inner")?,
@@ -32,44 +25,27 @@ impl Document {
         Ok(status)
     }
 
-    pub fn infos(&self) -> serde_json::Result<script::Infos> {
+    pub fn infos(&self) -> anyhow::Result<script::Infos> {
         let selector = Selector::parse("script").unwrap();
         let javascript = self
             .0
             .select(&selector)
             .find_map(|n| {
                 let text = n.inner_html();
-                if text.contains("var $gawdata") {
+                if text.contains("$gawdata") {
                     Some(text)
                 } else {
                     None
                 }
             })
             .unwrap();
-        let s = javascript.trim_end_matches("; $gawdata.is_mobile = false;");
-        let s = s.trim_start_matches("var $gawdata = ");
-        serde_json::from_str(s)
-    }
-}
-
-impl From<super::percent::PercentError> for ParseError {
-    fn from(e: super::percent::PercentError) -> Self {
-        Self::PercentError(e)
-    }
-}
-
-impl fmt::Display for ParseError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::Debug::fmt(self, f)
-    }
-}
-
-impl std::error::Error for ParseError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match self {
-            Self::PercentError(error) => Some(error),
-            _ => None,
-        }
+        let start = javascript
+            .find('{')
+            .ok_or_else(|| anyhow::anyhow!("missing start of json data"))?;
+        let end = javascript
+            .rfind('}')
+            .ok_or_else(|| anyhow::anyhow!("missing end of json data"))?;
+        Ok(serde_json::from_str(&javascript[start..end + 1])?)
     }
 }
 
@@ -94,7 +70,7 @@ mod tests {
         #[test]
         fn mission_status() {
             let doc = Document(Html::parse_document(include_str!(
-                "../../tests/full_response.html"
+                "../../tests/script.html"
             )));
             let script = doc.infos().unwrap();
             println!("{:#?}", script);
