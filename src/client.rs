@@ -14,7 +14,7 @@ pub struct Mission {
 }
 
 #[derive(Debug)]
-pub struct CurrentMissions(pub HashMap<String, PlayerMission>);
+pub struct CurrentMissions(pub Vec<PlayerMission>);
 
 #[derive(Debug)]
 pub struct Galaxy {
@@ -24,10 +24,11 @@ pub struct Galaxy {
 
 #[derive(Debug)]
 pub struct PlayerMission {
+    name: String,
     start: chrono::DateTime<chrono::Utc>,
     duration: chrono::Duration,
-    pub is_completed: bool,
-    pub remained: chrono::Duration,
+    is_completed: bool,
+    remained: chrono::Duration,
 }
 
 impl N7Client {
@@ -107,17 +108,12 @@ impl<'a> From<(super::Mission<'a>, super::Action)> for Mission {
 
 impl From<HashMap<String, crate::html::script::PlayerMission>> for CurrentMissions {
     fn from(missions: HashMap<String, crate::html::script::PlayerMission>) -> Self {
-        CurrentMissions(
-            missions
-                .into_iter()
-                .map(|(name, mission)| (name, mission.into()))
-                .collect(),
-        )
+        CurrentMissions(missions.into_iter().map(Into::into).collect())
     }
 }
 
-impl From<crate::html::script::PlayerMission> for PlayerMission {
-    fn from(mission: crate::html::script::PlayerMission) -> Self {
+impl From<(String, crate::html::script::PlayerMission)> for PlayerMission {
+    fn from((name, mission): (String, crate::html::script::PlayerMission)) -> Self {
         fn i64_to_datetime(timestamp: i64) -> chrono::DateTime<chrono::Utc> {
             chrono::DateTime::from_utc(
                 chrono::NaiveDateTime::from_timestamp(timestamp, 0),
@@ -129,6 +125,7 @@ impl From<crate::html::script::PlayerMission> for PlayerMission {
             chrono::Duration::from_std(std::time::Duration::from_secs(duration)).unwrap()
         }
         Self {
+            name,
             start: i64_to_datetime(mission.start),
             duration: u64_to_duration(mission.duration as _),
             remained: u64_to_duration(if mission.remained < 0 {
@@ -141,8 +138,26 @@ impl From<crate::html::script::PlayerMission> for PlayerMission {
     }
 }
 
-impl AsRef<HashMap<String, PlayerMission>> for CurrentMissions {
-    fn as_ref(&self) -> &HashMap<String, PlayerMission> {
+impl AsRef<Vec<PlayerMission>> for CurrentMissions {
+    fn as_ref(&self) -> &Vec<PlayerMission> {
         &self.0
+    }
+}
+
+impl std::fmt::Display for PlayerMission {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        if self.is_completed {
+            write!(f, "{} finished", self.name)
+        } else if self.remained.num_seconds() > 60 {
+            write!(
+                f,
+                "{} {}m{}s",
+                self.name,
+                self.remained.num_minutes(),
+                self.remained.num_seconds() % 60
+            )
+        } else {
+            write!(f, "{} {}s", self.name, self.remained.num_seconds())
+        }
     }
 }

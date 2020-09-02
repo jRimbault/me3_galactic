@@ -33,25 +33,10 @@ fn main() {
     match client.status() {
         Ok(galaxy) => {
             println!("{}", galaxy.status);
-            for (name, mission) in galaxy.missions.0 {
-                display(&name, &mission);
+            for mission in galaxy.missions.0 {
+                println!("{}", mission);
             }
         }
         Err(error) => println!("{:?}", error),
-    }
-}
-
-fn display(name: &str, mission: &galactic::PlayerMission) {
-    if mission.is_completed {
-        println!("{} finished", name);
-    } else if mission.remained.num_seconds() > 60 {
-        println!(
-            "{} {}m{}s",
-            name,
-            mission.remained.num_minutes(),
-            mission.remained.num_seconds() % 60
-        );
-    } else {
-        println!("{} {}s", name, mission.remained.num_seconds());
     }
 }
