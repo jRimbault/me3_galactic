@@ -1,6 +1,6 @@
 [package]
 name = "galactic"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["jRimbault <jacques.rimbault@gmail.com>"]
 edition = "2018"
 
