@@ -9,6 +9,14 @@ pub struct Data {
     lang: HashMap<String, String>,
 }
 
+impl Data {
+    pub fn one_hour_missions(&self) -> impl Iterator<Item = &String> {
+        self.missions
+            .iter()
+            .filter_map(|(n, m)| if m.duration == 3600 { Some(n) } else { None })
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum EventualMissions {

@@ -1,3 +1,5 @@
+pub mod mission;
+
 use crate::html::data;
 use std::collections::HashMap;
 
@@ -15,13 +17,13 @@ pub struct Mission {
 }
 
 #[derive(Debug, Default)]
-pub struct CurrentMissions(pub Vec<PlayerMission>);
+pub struct CurrentMissions(pub(crate) Vec<PlayerMission>);
 
 #[derive(Debug)]
 pub struct Galaxy {
     pub status: super::GalaxyStatus,
     pub missions: CurrentMissions,
-    raw: data::Data,
+    pub raw: data::Data,
 }
 
 #[derive(Debug)]
@@ -113,6 +115,15 @@ impl<'a> From<(super::Mission<'a>, super::Action)> for Mission {
     }
 }
 
+impl<'a> From<(&'a str, super::Action)> for Mission {
+    fn from((mission, action): (&'a str, super::Action)) -> Self {
+        Self {
+            name: mission.to_string(),
+            action,
+        }
+    }
+}
+
 impl From<&HashMap<String, data::PlayerMission>> for CurrentMissions {
     fn from(missions: &HashMap<String, data::PlayerMission>) -> Self {
         CurrentMissions(missions.iter().map(Into::into).collect())
@@ -145,8 +156,10 @@ impl From<(&String, &data::PlayerMission)> for PlayerMission {
     }
 }
 
-impl AsRef<Vec<PlayerMission>> for CurrentMissions {
-    fn as_ref(&self) -> &Vec<PlayerMission> {
+impl std::ops::Deref for CurrentMissions {
+    type Target = Vec<PlayerMission>;
+
+    fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
