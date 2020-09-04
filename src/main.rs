@@ -13,9 +13,14 @@ struct Args {
     cookie: String,
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let args = Args::from_args();
     let client = galactic::N7Client::with_cookie(&args.cookie);
+    let galaxy = client.status()?;
+    println!("{}", galaxy.status);
+    for mission in galaxy.missions.0.iter() {
+        println!("{}", mission);
+    }
     if let Some(action) = args.action {
         for (result, mission) in galactic::MISSIONS
             .one_hour
@@ -31,13 +36,5 @@ fn main() {
             }
         }
     }
-    match client.status() {
-        Ok(galaxy) => {
-            println!("{}", galaxy.status);
-            for mission in galaxy.missions.0 {
-                println!("{}", mission);
-            }
-        }
-        Err(error) => println!("{:?}", error),
-    }
+    Ok(())
 }

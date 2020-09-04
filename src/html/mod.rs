@@ -1,4 +1,4 @@
-pub mod script;
+pub mod data;
 
 use super::GalaxyStatus;
 use scraper::{Html, Selector};
@@ -25,7 +25,7 @@ impl Document {
         Ok(status)
     }
 
-    pub fn infos(&self) -> anyhow::Result<script::Infos> {
+    pub fn infos(&self) -> anyhow::Result<data::Data> {
         let selector = Selector::parse("script").unwrap();
         let javascript = self
             .0
@@ -78,7 +78,7 @@ mod tests {
 
         #[test]
         fn format() {
-            let s: script::Infos =
+            let s: data::Data =
                 serde_json::from_str(include_str!("../../tests/script.json")).unwrap();
             println!("{:#?}", s);
         }

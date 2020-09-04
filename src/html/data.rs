@@ -2,9 +2,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Infos {
+pub struct Data {
     theaters: Theaters,
-    missions: HashMap<String, Mission>,
+    pub missions: HashMap<String, Mission>,
     pub player_missions: EventualMissions,
     lang: HashMap<String, String>,
 }
@@ -16,23 +16,14 @@ pub enum EventualMissions {
     Missions(HashMap<String, PlayerMission>),
 }
 
-impl EventualMissions {
-    pub fn get(self) -> HashMap<String, PlayerMission> {
-        match self {
-            Self::NoMission(_) => Default::default(),
-            Self::Missions(m) => m,
-        }
-    }
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Mission {
     theater: String,
     planet: String,
-    name: String,
+    pub name: String,
     description: String,
     complete_msg: String,
-    duration: i64,
+    pub duration: i64,
     rating: String,
 }
 
