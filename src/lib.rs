@@ -2,7 +2,7 @@ mod client;
 mod html;
 mod percent;
 
-pub use client::{Mission as N7Mission, N7Client, PlayerMission};
+pub use client::{Galaxy, Mission as N7Mission, N7Client, PlayerMission};
 pub use percent::Percentage;
 use std::fmt;
 
@@ -26,7 +26,7 @@ pub struct N7Response {
     pub ratings: Option<GalaxyStatus>,
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, Default)]
 pub struct GalaxyStatus {
     pub inner: Percentage,
     pub terminus: Percentage,

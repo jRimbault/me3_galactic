@@ -4,7 +4,7 @@ use std::convert::{TryFrom, TryInto};
 use std::fmt;
 use std::str::FromStr;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Default)]
 pub struct Percentage(pub(crate) f64);
 
 #[derive(Debug)]

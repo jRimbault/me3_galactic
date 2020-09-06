@@ -1,4 +1,4 @@
-use galactic::Action;
+use galactic::{Action, Galaxy, N7Client};
 use structopt::StructOpt;
 
 /// Deploy missions and collect the rewards for galactic readiness in Mass Effect 3.
@@ -15,12 +15,20 @@ struct Args {
 }
 
 fn main() -> anyhow::Result<()> {
+    env_logger::from_env(env_logger::Env::default().default_filter_or("info")).init();
     let args = Args::from_args();
-    let client = galactic::N7Client::with_cookie(&args.cookie);
+    let client = N7Client::with_cookie(&args.cookie);
     if args.automatic {
         loop {
-            if let Err(error) = cycle(&client) {
-                println!("{} {:?}", error, chrono::Utc::now());
+            log::info!("collecting rewards and deploying missions");
+            match cycle(&client) {
+                Ok(_) => {
+                    log::info!("rewards collected and missions relaunched");
+                }
+                Err(error) => {
+                    log::error!("{:?}", error);
+                    break;
+                }
             }
             countdown(std::time::Duration::from_secs(3600));
         }
@@ -30,7 +38,7 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn cycle(client: &galactic::N7Client) -> anyhow::Result<()> {
+fn cycle(client: &N7Client) -> anyhow::Result<Galaxy> {
     let galaxy = client.status()?;
     if galaxy.missions.len() != 0 {
         for mission in galaxy.missions.iter() {
@@ -41,14 +49,16 @@ fn cycle(client: &galactic::N7Client) -> anyhow::Result<()> {
             client.launch_mission((mission.as_ref(), Action::Deploy))?;
         }
     }
-    Ok(())
+    client.status()
 }
 
 fn countdown(wait_for: std::time::Duration) {
+    use std::thread;
+    use std::time::{Duration, Instant};
     let spinner = indicatif::ProgressBar::new_spinner();
-    let start_time = std::time::Instant::now();
-    let one_second = std::time::Duration::from_secs(1);
-    let sleep = std::time::Duration::from_millis(100);
+    let start_time = Instant::now();
+    let one_second = Duration::from_secs(1);
+    let sleep = Duration::from_millis(100);
     for _ in 0.. {
         let elapsed = start_time.elapsed();
         if elapsed > wait_for {
@@ -63,6 +73,6 @@ fn countdown(wait_for: std::time::Duration) {
             "waiting for {}",
             indicatif::HumanDuration(remaining)
         ));
-        std::thread::sleep(sleep);
+        thread::sleep(sleep);
     }
 }

@@ -19,7 +19,7 @@ pub struct Mission {
 #[derive(Debug, Default)]
 pub struct CurrentMissions(pub(crate) Vec<PlayerMission>);
 
-#[derive(Debug)]
+#[derive(Default, Debug)]
 pub struct Galaxy {
     pub status: super::GalaxyStatus,
     pub missions: CurrentMissions,
@@ -63,6 +63,7 @@ impl N7Client {
         M: Into<Mission>,
     {
         let mission = mission.into();
+        log::debug!("{} {}", mission.action, mission.name);
         let response = self
             .client
             .post(super::BASE_URL)
@@ -81,20 +82,10 @@ impl N7Client {
     }
 
     pub fn status(&self) -> anyhow::Result<Galaxy> {
-        // Ok(Galaxy {
-        //     status: super::GalaxyStatus {
-        //         inner: super::Percentage(1.),
-        //         terminus: super::Percentage(1.),
-        //         earth: super::Percentage(1.),
-        //         outer: super::Percentage(1.),
-        //         attican: super::Percentage(1.),
-        //     },
-        //     raw: Default::default(),
-        //     missions: Default::default(),
-        // })
+        log::debug!("fetch galaxy's global status");
         let response = self.client.get(super::BASE_URL).send()?;
         let html = if is_redirected(response.url()) {
-            return Err(anyhow::anyhow!("cookie is expired").context("failed getting misc data"));
+            return Err(anyhow::anyhow!("cookie is expired").context("failed getting data"));
         } else {
             response.text()?
         };
@@ -172,23 +163,5 @@ impl std::ops::Deref for CurrentMissions {
 
     fn deref(&self) -> &Self::Target {
         &self.0
-    }
-}
-
-impl std::fmt::Display for PlayerMission {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        if self.is_completed {
-            write!(f, "{} finished", self.name)
-        } else if self.remained.num_seconds() > 60 {
-            write!(
-                f,
-                "{} {}m{}s",
-                self.name,
-                self.remained.num_minutes(),
-                self.remained.num_seconds() % 60
-            )
-        } else {
-            write!(f, "{} {}s", self.name, self.remained.num_seconds())
-        }
     }
 }
