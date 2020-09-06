@@ -1,12 +1,20 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Infos {
+#[derive(Default, Debug, Serialize, Deserialize)]
+pub struct Data {
     theaters: Theaters,
-    missions: HashMap<String, Mission>,
+    pub missions: HashMap<String, Mission>,
     pub player_missions: EventualMissions,
     lang: HashMap<String, String>,
+}
+
+impl Data {
+    pub fn one_hour_missions(&self) -> impl Iterator<Item = &String> {
+        self.missions
+            .iter()
+            .filter_map(|(n, m)| if m.duration == 3600 { Some(n) } else { None })
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -16,24 +24,21 @@ pub enum EventualMissions {
     Missions(HashMap<String, PlayerMission>),
 }
 
-impl EventualMissions {
-    pub fn get(self) -> HashMap<String, PlayerMission> {
-        match self {
-            Self::NoMission(_) => Default::default(),
-            Self::Missions(m) => m,
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Mission {
     theater: String,
     planet: String,
-    name: String,
+    pub name: String,
     description: String,
     complete_msg: String,
-    duration: i64,
+    pub duration: i64,
     rating: String,
+}
+
+impl Default for EventualMissions {
+    fn default() -> Self {
+        Self::Missions(Default::default())
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -44,7 +49,7 @@ pub struct PlayerMission {
     pub remained: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Theaters {
     inner: Theater,
     terminus: Theater,
@@ -53,7 +58,7 @@ pub struct Theaters {
     attican: Theater,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Theater {
     name: String,
 }

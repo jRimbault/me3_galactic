@@ -5,30 +5,14 @@ mod percent;
 pub use client::{Mission as N7Mission, N7Client, PlayerMission};
 pub use percent::Percentage;
 use std::fmt;
-use structopt::StructOpt;
 
 const BASE_URL: &str = "http://n7hq.masseffect.com/galaxy_at_war/galactic_readiness/";
 pub const ID_COOKIE: &str = "ME3N7HQSID";
 
 #[derive(Copy, Clone, Debug)]
 pub struct Mission<'a>(pub &'a str);
-#[derive(Copy, Clone, Debug)]
-pub struct Missions<'a> {
-    /// longer missions don't make econmic sense, but maybe I'll add them someday
-    pub one_hour: [Mission<'a>; 5],
-}
 
-pub const MISSIONS: Missions = Missions {
-    one_hour: [
-        Mission("cyone"),
-        Mission("trident"),
-        Mission("garvug"),
-        Mission("gembat"),
-        Mission("pinnacle"),
-    ],
-};
-
-#[derive(Debug, StructOpt, Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub enum Action {
     /// collect rewards
     Collect,
@@ -94,10 +78,11 @@ impl fmt::Display for Mission<'_> {
 
 impl fmt::Display for GalaxyStatus {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        writeln!(f, "Inner sector: {:.2}", self.inner)?;
-        writeln!(f, "Terminus sector: {:.2}", self.terminus)?;
-        writeln!(f, "Earth sector: {:.2}", self.earth)?;
-        writeln!(f, "Outer sector: {:.2}", self.outer)?;
-        write!(f, "Attican sector: {:.2}", self.terminus)
+        writeln!(f, "Sector statuses:")?;
+        writeln!(f, "  Inner: {:.2}", self.inner)?;
+        writeln!(f, "  Terminus: {:.2}", self.terminus)?;
+        writeln!(f, "  Earth: {:.2}", self.earth)?;
+        writeln!(f, "  Outer: {:.2}", self.outer)?;
+        write!(f, "  Attican: {:.2}", self.terminus)
     }
 }

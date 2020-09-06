@@ -1,3 +1,6 @@
+pub mod mission;
+
+use crate::html::data;
 use std::collections::HashMap;
 
 const REDIRECTED_URL_BOUND: usize = 27;
@@ -13,13 +16,14 @@ pub struct Mission {
     pub action: super::Action,
 }
 
-#[derive(Debug)]
-pub struct CurrentMissions(pub Vec<PlayerMission>);
+#[derive(Debug, Default)]
+pub struct CurrentMissions(pub(crate) Vec<PlayerMission>);
 
 #[derive(Debug)]
 pub struct Galaxy {
     pub status: super::GalaxyStatus,
     pub missions: CurrentMissions,
+    pub raw: data::Data,
 }
 
 #[derive(Debug)]
@@ -77,6 +81,17 @@ impl N7Client {
     }
 
     pub fn status(&self) -> anyhow::Result<Galaxy> {
+        // Ok(Galaxy {
+        //     status: super::GalaxyStatus {
+        //         inner: super::Percentage(1.),
+        //         terminus: super::Percentage(1.),
+        //         earth: super::Percentage(1.),
+        //         outer: super::Percentage(1.),
+        //         attican: super::Percentage(1.),
+        //     },
+        //     raw: Default::default(),
+        //     missions: Default::default(),
+        // })
         let response = self.client.get(super::BASE_URL).send()?;
         let html = if is_redirected(response.url()) {
             return Err(anyhow::anyhow!("cookie is expired").context("failed getting misc data"));
@@ -84,9 +99,14 @@ impl N7Client {
             response.text()?
         };
         let doc = super::html::Document(scraper::Html::parse_document(&html));
+        let data = doc.infos()?;
         Ok(Galaxy {
             status: doc.galaxy_status()?,
-            missions: doc.infos()?.player_missions.get().into(),
+            missions: match &data.player_missions {
+                data::EventualMissions::NoMission(_) => Default::default(),
+                data::EventualMissions::Missions(m) => m.into(),
+            },
+            raw: data,
         })
     }
 }
@@ -106,14 +126,23 @@ impl<'a> From<(super::Mission<'a>, super::Action)> for Mission {
     }
 }
 
-impl From<HashMap<String, crate::html::script::PlayerMission>> for CurrentMissions {
-    fn from(missions: HashMap<String, crate::html::script::PlayerMission>) -> Self {
-        CurrentMissions(missions.into_iter().map(Into::into).collect())
+impl<'a> From<(&'a str, super::Action)> for Mission {
+    fn from((mission, action): (&'a str, super::Action)) -> Self {
+        Self {
+            name: mission.to_string(),
+            action,
+        }
     }
 }
 
-impl From<(String, crate::html::script::PlayerMission)> for PlayerMission {
-    fn from((name, mission): (String, crate::html::script::PlayerMission)) -> Self {
+impl From<&HashMap<String, data::PlayerMission>> for CurrentMissions {
+    fn from(missions: &HashMap<String, data::PlayerMission>) -> Self {
+        CurrentMissions(missions.iter().map(Into::into).collect())
+    }
+}
+
+impl From<(&String, &data::PlayerMission)> for PlayerMission {
+    fn from((name, mission): (&String, &data::PlayerMission)) -> Self {
         fn i64_to_datetime(timestamp: i64) -> chrono::DateTime<chrono::Utc> {
             chrono::DateTime::from_utc(
                 chrono::NaiveDateTime::from_timestamp(timestamp, 0),
@@ -125,7 +154,7 @@ impl From<(String, crate::html::script::PlayerMission)> for PlayerMission {
             chrono::Duration::from_std(std::time::Duration::from_secs(duration)).unwrap()
         }
         Self {
-            name,
+            name: name.to_owned(),
             start: i64_to_datetime(mission.start),
             duration: u64_to_duration(mission.duration as _),
             remained: u64_to_duration(if mission.remained < 0 {
@@ -138,8 +167,10 @@ impl From<(String, crate::html::script::PlayerMission)> for PlayerMission {
     }
 }
 
-impl AsRef<Vec<PlayerMission>> for CurrentMissions {
-    fn as_ref(&self) -> &Vec<PlayerMission> {
+impl std::ops::Deref for CurrentMissions {
+    type Target = Vec<PlayerMission>;
+
+    fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
