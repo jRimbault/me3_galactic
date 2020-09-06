@@ -19,7 +19,9 @@ fn main() -> anyhow::Result<()> {
     let client = galactic::N7Client::with_cookie(&args.cookie);
     if args.automatic {
         loop {
-            cycle(&client)?;
+            if let Err(error) = cycle(&client) {
+                println!("{} {:?}", error, chrono::Utc::now());
+            }
             countdown(std::time::Duration::from_secs(3600));
         }
     } else {
