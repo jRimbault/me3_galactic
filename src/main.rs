@@ -14,34 +14,47 @@ struct Args {
     automatic: bool,
 }
 
-fn main() -> anyhow::Result<()> {
+fn main() {
     env_logger::from_env(env_logger::Env::default().default_filter_or("info")).init();
     let args = Args::from_args();
     let client = N7Client::with_cookie(&args.cookie);
     if args.automatic {
         loop {
-            log::info!("collecting rewards and deploying missions");
-            match cycle(&client) {
-                Ok(_) => {
-                    log::info!("rewards collected and missions relaunched");
-                }
-                Err(error) => {
-                    log::error!("{:#}", error);
-                    break;
-                }
+            if match_cycle(&client).is_err() {
+                break;
             }
             countdown(std::time::Duration::from_secs(3600));
         }
-    } else {
-        cycle(&client)?;
+        std::process::exit(1);
+    } else if match_cycle(&client).is_err() {
+        std::process::exit(1);
     }
-    Ok(())
+}
+
+fn match_cycle(client: &N7Client) -> Result<(), ()> {
+    match cycle(&client) {
+        Ok(galaxy) => {
+            log::info!("{:#}", galaxy.status);
+            Ok(())
+        }
+        Err(error) => {
+            log::error!("{:#}", error);
+            Err(())
+        }
+    }
 }
 
 fn cycle(client: &N7Client) -> anyhow::Result<Galaxy> {
+    log::info!("fetching galaxy's status");
     let galaxy = client.status()?;
+    log::info!(
+        "{} current missions, {} completed",
+        galaxy.missions.len(),
+        galaxy.missions.iter().filter(|m| m.is_completed).count()
+    );
     if galaxy.missions.len() != 0 {
-        for mission in galaxy.missions.iter() {
+        for mission in galaxy.missions.iter().filter(|m| m.is_completed) {
+            log::info!("collecting and deploying mission {}", mission.name);
             mission.collect_and_deploy(&client)?;
         }
     } else {

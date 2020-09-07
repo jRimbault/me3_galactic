@@ -28,10 +28,10 @@ pub struct Galaxy {
 
 #[derive(Debug)]
 pub struct PlayerMission {
-    name: String,
+    pub name: String,
     start: chrono::DateTime<chrono::Utc>,
     duration: chrono::Duration,
-    is_completed: bool,
+    pub is_completed: bool,
     remained: chrono::Duration,
 }
 
@@ -74,7 +74,7 @@ impl N7Client {
             Err(anyhow::anyhow!("unknown, {}", response.status())
                 .context(format!("failed {} for {}", mission.action, mission.name)))
         } else if is_redirected(response.url()) {
-            Err(anyhow::anyhow!("cookie is expired")
+            Err(anyhow::anyhow!("cookie is expired or invalid")
                 .context(format!("failed {} for {}", mission.action, mission.name)))
         } else {
             Ok(response.json()?)
@@ -83,9 +83,12 @@ impl N7Client {
 
     pub fn status(&self) -> anyhow::Result<Galaxy> {
         log::debug!("fetch galaxy's global status");
+        // Ok(Default::default())
         let response = self.client.get(super::BASE_URL).send()?;
         let html = if is_redirected(response.url()) {
-            return Err(anyhow::anyhow!("cookie is expired").context("failed getting data"));
+            return Err(
+                anyhow::anyhow!("cookie is expired or invalid").context("failed getting data")
+            );
         } else {
             response.text()?
         };
