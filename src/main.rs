@@ -26,7 +26,7 @@ fn main() -> anyhow::Result<()> {
                     log::info!("rewards collected and missions relaunched");
                 }
                 Err(error) => {
-                    log::error!("{:?}", error);
+                    log::error!("{:#}", error);
                     break;
                 }
             }

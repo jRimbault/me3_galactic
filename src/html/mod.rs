@@ -11,7 +11,7 @@ impl Document {
             self.0
                 .select(&Selector::parse(&selector).unwrap())
                 .next()
-                .ok_or_else(|| anyhow::anyhow!(format!("missing ref {}", selector)))
+                .ok_or_else(|| anyhow::anyhow!("missing ref {}", selector))
                 .map(|d| d.inner_html())
                 .and_then(|p| Ok(p.trim_matches('%').parse()?))
         };
