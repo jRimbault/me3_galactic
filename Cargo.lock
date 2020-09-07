@@ -391,7 +391,6 @@ version = "0.6.1"
 dependencies = [
  "anyhow",
  "chrono",
- "console",
  "env_logger",
  "indicatif",
  "log",
