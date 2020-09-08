@@ -24,27 +24,29 @@ fn main() {
     let args = Args::from_args();
     let client = N7Client::with_cookie(&args.cookie);
     if args.automatic {
-        loop {
-            if match_cycle(&client).is_err() {
-                break;
-            }
-            countdown(std::time::Duration::from_secs(3600));
+        while let Some(remained) = match_cycle(&client) {
+            log::info!("waiting for {}", indicatif::HumanDuration(remained));
+            std::thread::sleep(remained);
         }
         std::process::exit(1);
-    } else if match_cycle(&client).is_err() {
+    } else if match_cycle(&client).is_none() {
         std::process::exit(1);
     }
 }
 
-fn match_cycle(client: &N7Client) -> Result<(), ()> {
+fn match_cycle(client: &N7Client) -> Option<std::time::Duration> {
     match cycle(&client) {
         Ok(galaxy) => {
             log::info!("{:#}", galaxy.status);
-            Ok(())
+            galaxy
+                .missions
+                .iter()
+                .max_by_key(|m| m.remained)
+                .and_then(|m| m.remained.to_std().ok())
         }
         Err(error) => {
             log::error!("{:#}", error);
-            Err(())
+            None
         }
     }
 }
@@ -64,33 +66,9 @@ fn cycle(client: &N7Client) -> anyhow::Result<Galaxy> {
         }
     } else {
         for mission in galaxy.raw.one_hour_missions() {
+            log::info!("deploying mission {}", mission);
             client.launch_mission((mission.as_ref(), Action::Deploy))?;
         }
     }
     client.status()
-}
-
-fn countdown(wait_for: std::time::Duration) {
-    use std::thread;
-    use std::time::{Duration, Instant};
-    let spinner = indicatif::ProgressBar::new_spinner();
-    let start_time = Instant::now();
-    let one_second = Duration::from_secs(1);
-    let sleep = Duration::from_millis(100);
-    for _ in 0.. {
-        let elapsed = start_time.elapsed();
-        if elapsed > wait_for {
-            break;
-        }
-        let remaining = wait_for - elapsed;
-        if remaining < one_second {
-            break;
-        }
-        spinner.tick();
-        spinner.set_message(&format!(
-            "waiting for {}",
-            indicatif::HumanDuration(remaining)
-        ));
-        thread::sleep(sleep);
-    }
 }

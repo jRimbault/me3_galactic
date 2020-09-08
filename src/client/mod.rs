@@ -32,7 +32,7 @@ pub struct PlayerMission {
     start: chrono::DateTime<chrono::Utc>,
     duration: chrono::Duration,
     pub is_completed: bool,
-    remained: chrono::Duration,
+    pub remained: chrono::Duration,
 }
 
 impl N7Client {
