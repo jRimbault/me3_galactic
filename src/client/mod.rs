@@ -7,7 +7,7 @@ const REDIRECTED_URL_BOUND: usize = 27;
 
 #[derive(Debug)]
 pub struct N7Client {
-    client: reqwest::blocking::Client,
+    agent: ureq::Agent,
 }
 
 #[derive(Debug, Clone)]
@@ -38,24 +38,19 @@ pub struct PlayerMission {
 impl N7Client {
     pub fn with_cookie(cookie: &str) -> Self {
         use super::ID_COOKIE;
-        use reqwest::{
-            blocking::Client,
-            header::{HeaderMap, HeaderValue, COOKIE},
-        };
         log::debug!("building agent with {}={:?}", ID_COOKIE, cookie);
         Self {
-            client: Client::builder()
-                .cookie_store(true)
-                .default_headers({
-                    let mut headers = HeaderMap::new();
-                    headers.insert(
-                        COOKIE,
-                        HeaderValue::from_str(&format!("{}={}", ID_COOKIE, cookie)).unwrap(),
-                    );
-                    headers
-                })
-                .build()
-                .unwrap(),
+            agent: {
+                let agent = ureq::Agent::new();
+                let cookie = ureq::Cookie::build(ID_COOKIE.to_owned(), cookie.to_owned())
+                    .domain("n7hq.masseffect.com")
+                    .path("/")
+                    .secure(false)
+                    .http_only(true)
+                    .finish();
+                agent.set_cookie(cookie);
+                agent
+            },
         }
     }
 
@@ -66,31 +61,30 @@ impl N7Client {
         let mission = mission.into();
         log::debug!("{} {}", mission.action, mission.name);
         let response = self
-            .client
+            .agent
             .post(super::BASE_URL)
-            .query(&[("ajax_action", mission.action.value())])
-            .form(&[("mission_code", &mission.name)])
-            .send()?;
+            .query("ajax_action", mission.action.value())
+            .send_form(&[("mission_code", &mission.name)]);
         if response.status() != 200 {
             Err(anyhow::anyhow!("unknown, {}", response.status())
                 .context(format!("failed {} for {}", mission.action, mission.name)))
-        } else if is_redirected(response.url()) {
+        } else if is_redirected(&response.get_url()) {
             Err(anyhow::anyhow!("cookie is expired or invalid")
                 .context(format!("failed {} for {}", mission.action, mission.name)))
         } else {
-            Ok(response.json()?)
+            Ok(serde_json::from_reader(response.into_reader())?)
         }
     }
 
     pub fn status(&self) -> anyhow::Result<Galaxy> {
         log::debug!("fetch galaxy's global status");
-        let response = self.client.get(super::BASE_URL).send()?;
-        let html = if is_redirected(response.url()) {
+        let response = self.agent.get(super::BASE_URL).call();
+        let html = if is_redirected(&response.get_url()) {
             return Err(
                 anyhow::anyhow!("cookie is expired or invalid").context("failed getting data")
             );
         } else {
-            response.text()?
+            response.into_string()?
         };
         let doc = super::html::Document(scraper::Html::parse_document(&html));
         let data = doc.infos()?;
