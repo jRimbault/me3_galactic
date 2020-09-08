@@ -14,8 +14,13 @@ struct Args {
     automatic: bool,
 }
 
+#[cfg(debug_assertions)]
+const LOG_LEVEL: &str = concat!(env!("CARGO_PKG_NAME"), "=debug");
+#[cfg(not(debug_assertions))]
+const LOG_LEVEL: &str = "info";
+
 fn main() {
-    env_logger::from_env(env_logger::Env::default().default_filter_or("info")).init();
+    env_logger::from_env(env_logger::Env::default().default_filter_or(LOG_LEVEL)).init();
     let args = Args::from_args();
     let client = N7Client::with_cookie(&args.cookie);
     if args.automatic {
