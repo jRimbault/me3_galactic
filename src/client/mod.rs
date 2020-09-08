@@ -42,13 +42,14 @@ impl N7Client {
         Self {
             agent: {
                 let agent = ureq::Agent::new();
-                let cookie = ureq::Cookie::build(ID_COOKIE.to_owned(), cookie.to_owned())
-                    .domain("n7hq.masseffect.com")
-                    .path("/")
-                    .secure(false)
-                    .http_only(true)
-                    .finish();
-                agent.set_cookie(cookie);
+                agent.set_cookie({
+                    ureq::Cookie::build(ID_COOKIE.to_owned(), cookie.to_owned())
+                        .domain(".n7hq.masseffect.com")
+                        .path("/")
+                        .secure(false)
+                        .http_only(false)
+                        .finish()
+                });
                 agent
             },
         }
@@ -65,7 +66,7 @@ impl N7Client {
             .post(super::BASE_URL)
             .query("ajax_action", mission.action.value())
             .send_form(&[("mission_code", &mission.name)]);
-        if response.status() != 200 {
+        if !response.ok() {
             Err(anyhow::anyhow!("unknown, {}", response.status())
                 .context(format!("failed {} for {}", mission.action, mission.name)))
         } else if is_redirected(&response.get_url()) {
