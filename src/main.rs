@@ -24,18 +24,21 @@ fn main() {
     let args = Args::from_args();
     let client = N7Client::with_cookie(&args.cookie);
     if args.automatic {
-        while let Some(remained) = match_cycle(&client) {
-            log::info!("waiting for {}", indicatif::HumanDuration(remained));
-            std::thread::sleep(remained);
+        while let Some(missions_duration) = run(&client) {
+            log::info!(
+                "waiting for {}",
+                indicatif::FormattedDuration(missions_duration)
+            );
+            std::thread::sleep(missions_duration);
         }
         std::process::exit(1);
-    } else if match_cycle(&client).is_none() {
+    } else if run(&client).is_none() {
         std::process::exit(1);
     }
 }
 
-fn match_cycle(client: &N7Client) -> Option<std::time::Duration> {
-    match cycle(&client) {
+fn run(client: &N7Client) -> Option<std::time::Duration> {
+    match refresh_missions(&client) {
         Ok(galaxy) => {
             log::info!("{:#}", galaxy.status);
             galaxy
@@ -51,7 +54,7 @@ fn match_cycle(client: &N7Client) -> Option<std::time::Duration> {
     }
 }
 
-fn cycle(client: &N7Client) -> anyhow::Result<Galaxy> {
+fn refresh_missions(client: &N7Client) -> anyhow::Result<Galaxy> {
     log::info!("fetching galaxy's status");
     let galaxy = client.status()?;
     log::info!(

@@ -42,6 +42,7 @@ impl N7Client {
             blocking::Client,
             header::{HeaderMap, HeaderValue, COOKIE},
         };
+        log::debug!("building agent with {}={:?}", ID_COOKIE, cookie);
         Self {
             client: Client::builder()
                 .cookie_store(true)
@@ -83,7 +84,6 @@ impl N7Client {
 
     pub fn status(&self) -> anyhow::Result<Galaxy> {
         log::debug!("fetch galaxy's global status");
-        // Ok(Default::default())
         let response = self.client.get(super::BASE_URL).send()?;
         let html = if is_redirected(response.url()) {
             return Err(
