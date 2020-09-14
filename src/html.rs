@@ -1,9 +1,7 @@
-pub mod data;
-
 use super::GalaxyStatus;
 use scraper::{Html, Selector};
 
-pub struct Document(pub(crate) Html);
+pub(crate) struct Document(pub(crate) Html);
 
 impl Document {
     pub fn galaxy_status(&self) -> anyhow::Result<GalaxyStatus> {
@@ -25,7 +23,7 @@ impl Document {
         Ok(status)
     }
 
-    pub fn infos(&self) -> anyhow::Result<data::Data> {
+    pub fn infos(&self) -> anyhow::Result<crate::Data> {
         let selector = Selector::parse("script").unwrap();
         let javascript = self
             .0
@@ -38,7 +36,7 @@ impl Document {
                     None
                 }
             })
-            .unwrap();
+            .ok_or_else(|| anyhow::anyhow!("missing json data"))?;
         let start = javascript
             .find('{')
             .ok_or_else(|| anyhow::anyhow!("missing start of json data"))?;
@@ -56,9 +54,7 @@ mod tests {
 
         #[test]
         fn galaxy_status() {
-            let doc = Document(Html::parse_document(include_str!(
-                "../../tests/response.html"
-            )));
+            let doc = Document(Html::parse_document(include_str!("../tests/response.html")));
             let status = doc.galaxy_status().unwrap();
             assert_eq!(status.inner.0, 0.9939);
             assert_eq!(status.terminus.0, 0.9939);
@@ -69,17 +65,15 @@ mod tests {
 
         #[test]
         fn mission_status() {
-            let doc = Document(Html::parse_document(include_str!(
-                "../../tests/script.html"
-            )));
+            let doc = Document(Html::parse_document(include_str!("../tests/script.html")));
             let script = doc.infos().unwrap();
             println!("{:#?}", script);
         }
 
         #[test]
         fn format() {
-            let s: data::Data =
-                serde_json::from_str(include_str!("../../tests/script.json")).unwrap();
+            let s: crate::Data =
+                serde_json::from_str(include_str!("../tests/script.json")).unwrap();
             println!("{:#?}", s);
         }
     }
