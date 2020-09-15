@@ -18,7 +18,7 @@ fn main() {
     env_logger::from_env(Env::default().default_filter_or(LOG_LEVEL)).init();
     let args = Args::from_args();
     match args.command {
-        Some(cmd) => cmd.run(),
-        None => galactic::Refresh::from_args().run(),
+        Some(cmd) => cmd.run(args.cookie),
+        None => galactic::Refresh::from_args().run(args.cookie),
     }
 }

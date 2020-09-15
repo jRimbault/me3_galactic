@@ -22,10 +22,10 @@ pub struct N7Cookie {
 }
 
 impl Command {
-    pub fn run(self) {
+    pub fn run(self, cookie: N7Cookie) {
         match self {
-            Self::Refresh(a) => a.run(),
-            Self::Automatic(a) => a.run(),
+            Self::Refresh(a) => a.run(cookie),
+            Self::Automatic(a) => a.run(cookie),
         }
     }
 }

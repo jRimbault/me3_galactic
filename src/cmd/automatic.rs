@@ -4,8 +4,6 @@ use structopt::StructOpt;
 /// refresh every missions untils the cookie expires
 #[derive(Debug, StructOpt)]
 pub struct Automatic {
-    #[structopt(flatten)]
-    cookie: super::N7Cookie,
     /// run in the background automatically
     #[structopt(short, long)]
     daemonize: bool,
@@ -15,11 +13,11 @@ pub struct Automatic {
 }
 
 impl Automatic {
-    pub fn run(self) {
+    pub fn run(self, cookie: super::N7Cookie) {
         if self.daemonize {
-            self.daemonize();
+            self.daemonize(cookie);
         }
-        let client = Client::with_cookie(&self.cookie.value);
+        let client = Client::with_cookie(&cookie.value);
         while let Some(duration_left) = inner_loop(&client) {
             log::info!(
                 "waiting for {}",
@@ -30,11 +28,10 @@ impl Automatic {
         std::process::exit(1);
     }
 
-    fn daemonize(self) -> ! {
+    fn daemonize(self, cookie: super::N7Cookie) -> ! {
         let program: std::path::PathBuf = std::env::args_os().next().unwrap().into();
         let mut cmd = std::process::Command::new(program);
-        cmd.env(crate::ID_COOKIE, &self.cookie.value)
-            .arg("automatic");
+        cmd.env(crate::ID_COOKIE, &cookie.value).arg("automatic");
         if let Some(log_file) = self.log_file.as_deref() {
             cmd.stderr(std::fs::File::create(&log_file).unwrap());
         }
