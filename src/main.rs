@@ -10,7 +10,6 @@ const LOG_LEVEL: &str = "info";
 struct Args {
     #[structopt(subcommand)]
     command: Option<galactic::Command>,
-    /// identifier cookie for n7hq.masseffect.com
     #[structopt(flatten)]
     cookie: galactic::N7Cookie,
 }
