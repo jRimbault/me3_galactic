@@ -5,12 +5,12 @@ use structopt::StructOpt;
 #[derive(Debug, StructOpt)]
 pub struct Automatic {
     #[structopt(flatten)]
-    args: super::Args,
+    cookie: super::N7Cookie,
 }
 
 impl Automatic {
     pub fn run(self) {
-        let client = Client::with_cookie(&self.args.cookie);
+        let client = Client::with_cookie(&self.cookie.value);
         while let Some(duration_left) = inner_loop(&client) {
             log::info!(
                 "waiting for {}",

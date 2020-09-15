@@ -15,10 +15,10 @@ pub enum Command {
 }
 
 #[derive(Debug, StructOpt)]
-struct Args {
+pub struct N7Cookie {
     /// identifier cookie for n7hq.masseffect.com
-    #[structopt(short, long, env = crate::ID_COOKIE, hide_env_values = true)]
-    cookie: String,
+    #[structopt(short = "c", long = "cookie", env = crate::ID_COOKIE, hide_env_values = true)]
+    value: String,
 }
 
 impl Command {

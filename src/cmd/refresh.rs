@@ -6,12 +6,12 @@ use structopt::StructOpt;
 #[derive(Debug, StructOpt)]
 pub struct Refresh {
     #[structopt(flatten)]
-    args: super::Args,
+    cookie: super::N7Cookie,
 }
 
 impl Refresh {
     pub fn run(self) {
-        let client = Client::with_cookie(&self.args.cookie);
+        let client = Client::with_cookie(&self.cookie.value);
         match client.refresh_missions() {
             Ok(galaxy) => log::info!("{:#}", galaxy.status),
             Err(error) => {

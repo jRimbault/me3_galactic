@@ -4,7 +4,7 @@ mod data;
 mod html;
 mod percent;
 
-pub use cmd::{Automatic, Command, Refresh};
+pub use cmd::{Automatic, Command, N7Cookie, Refresh};
 use percent::Percentage;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
