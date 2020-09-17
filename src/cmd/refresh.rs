@@ -4,7 +4,11 @@ use structopt::StructOpt;
 
 /// refresh every missions and quits, this is the default
 #[derive(Debug, StructOpt)]
-pub struct Refresh {}
+pub struct Refresh {
+    // placeholder to allow arg parsing when falling back to refresh
+    #[structopt(short = "c", long = "cookie")]
+    _value: Option<String>,
+}
 
 impl Refresh {
     pub fn run(self, cookie: super::N7Cookie) {
