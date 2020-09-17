@@ -10,7 +10,7 @@ pub struct Automatic {
     /// run in the background automatically
     #[structopt(short, long)]
     daemonize: bool,
-    /// for daemon mode, default will not to log
+    /// for daemon mode, default will not log anything
     #[structopt(short, long, parse(from_os_str))]
     log_file: Option<PathBuf>,
 }
