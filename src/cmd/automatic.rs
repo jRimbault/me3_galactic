@@ -1,6 +1,9 @@
+use super::N7Cookie;
 use crate::client::N7HqClient;
 use reqwest::blocking::Client;
+use std::path::PathBuf;
 use structopt::StructOpt;
+
 /// refresh every missions untils the cookie expires
 #[derive(Debug, StructOpt)]
 pub struct Automatic {
@@ -9,13 +12,13 @@ pub struct Automatic {
     daemonize: bool,
     /// for daemon mode, default will not to log
     #[structopt(short, long, parse(from_os_str))]
-    log_file: Option<std::path::PathBuf>,
+    log_file: Option<PathBuf>,
 }
 
 impl Automatic {
-    pub fn run(self, cookie: super::N7Cookie) {
+    pub fn run(self, cookie: N7Cookie) {
         if self.daemonize {
-            self.daemonize(cookie);
+            std::process::exit(self.daemonize(cookie));
         }
         let client = Client::with_cookie(&cookie.value);
         while let Some(duration_left) = inner_loop(&client) {
@@ -28,20 +31,13 @@ impl Automatic {
         std::process::exit(1);
     }
 
-    fn daemonize(self, cookie: super::N7Cookie) -> ! {
-        let program: std::path::PathBuf = std::env::args_os().next().unwrap().into();
-        let mut cmd = std::process::Command::new(program);
-        cmd.env(crate::ID_COOKIE, &cookie.value).arg("automatic");
-        if let Some(log_file) = self.log_file.as_deref() {
-            cmd.stderr(std::fs::File::create(&log_file).unwrap());
-        }
-        // not waiting on it, just dropping it for the OS to maybe pick up later..
-        match cmd.spawn() {
+    fn daemonize(self, cookie: N7Cookie) -> i32 {
+        match relaunch_itself(self.log_file, cookie) {
+            Ok(_) => 0,
             Err(error) => {
-                log::error!("couldn't launch program, {:#}", anyhow::Error::from(error));
-                std::process::exit(1);
+                log::error!("{:#}", error);
+                1
             }
-            Ok(_) => std::process::exit(0),
         }
     }
 }
@@ -63,4 +59,18 @@ fn inner_loop(client: &Client) -> Option<std::time::Duration> {
             None
         }
     }
+}
+
+fn relaunch_itself(log_file: Option<PathBuf>, cookie: N7Cookie) -> anyhow::Result<()> {
+    let program = std::env::args_os().next().expect("program name");
+    let mut cmd = std::process::Command::new(program);
+    cmd.env(crate::ID_COOKIE, &cookie.value).arg("automatic");
+    if let Some(log_file) = log_file.as_deref() {
+        cmd.stderr(std::fs::File::create(&log_file)?);
+    } else {
+        cmd.stderr(std::process::Stdio::null());
+    }
+    // not waiting on it, just dropping it for the OS to maybe pick up later..
+    let _ = cmd.spawn()?;
+    Ok(())
 }
