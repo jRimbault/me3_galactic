@@ -43,11 +43,12 @@ impl From<&HashMap<String, crate::RawPlayerMission>> for crate::CurrentMissions 
 
 impl From<(&String, &crate::RawPlayerMission)> for crate::PlayerMission {
     fn from((name, mission): (&String, &crate::RawPlayerMission)) -> Self {
-        fn i64_to_datetime(timestamp: i64) -> chrono::DateTime<chrono::Utc> {
-            chrono::DateTime::from_utc(
+        fn i64_to_datetime(timestamp: i64) -> chrono::DateTime<chrono::Local> {
+            chrono::DateTime::<chrono::Utc>::from_utc(
                 chrono::NaiveDateTime::from_timestamp(timestamp, 0),
                 chrono::Utc,
             )
+            .into()
         }
 
         fn u64_to_duration(duration: u64) -> chrono::Duration {

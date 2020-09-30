@@ -39,7 +39,7 @@ struct Galaxy {
 #[derive(Debug)]
 struct PlayerMission {
     name: String,
-    start: chrono::DateTime<chrono::Utc>,
+    start: chrono::DateTime<chrono::Local>,
     duration: chrono::Duration,
     is_completed: bool,
     remained: chrono::Duration,
