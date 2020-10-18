@@ -7,20 +7,19 @@ impl Document {
     pub fn galaxy_status(&self) -> anyhow::Result<GalaxyStatus> {
         let get = |selector: &str| {
             self.0
-                .select(&Selector::parse(&selector).unwrap())
+                .select(&Selector::parse(selector).unwrap())
                 .next()
                 .ok_or_else(|| anyhow::anyhow!("missing ref {}", selector))
                 .map(|d| d.inner_html())
                 .and_then(|p| Ok(p.trim_matches('%').parse()?))
         };
-        let status = GalaxyStatus {
+        Ok(GalaxyStatus {
             inner: get("#gaw-trating-inner")?,
             terminus: get("#gaw-trating-terminus")?,
             earth: get("#gaw-trating-earth")?,
             outer: get("#gaw-trating-outer")?,
             attican: get("#gaw-trating-attican")?,
-        };
-        Ok(status)
+        })
     }
 
     pub fn infos(&self) -> anyhow::Result<crate::Data> {
